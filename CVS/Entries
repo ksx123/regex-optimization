@@ -1,0 +1,40 @@
+/.cdtproject/1.1.1.1/Wed Jan 16 21:38:38 2008//
+/.project/1.1.1.1/Wed Jan 16 21:38:38 2008//
+D/.settings////
+D/ruleset////
+/README/1.1/Thu Jan 17 17:56:48 2008//
+D/regex////
+/dheap.c/1.1.1.1/Sat May  3 17:13:06 2008//
+/dheap.h/1.1.1.1/Sat May  3 17:13:10 2008//
+/hybrid_fa.c/1.2/Sat May  3 17:13:06 2008//
+/hybrid_fa.h/1.2/Sat May  3 17:13:10 2008//
+/int_set.c/1.1.1.1/Sat May  3 17:13:06 2008//
+/int_set.h/1.1.1.1/Sat May  3 17:13:10 2008//
+/nfa.h/1.2/Sat May  3 17:13:10 2008//
+/parser.h/1.1.1.1/Sat May  3 17:13:10 2008//
+/partition.c/1.1.1.1/Sat May  3 17:13:08 2008//
+/partition.h/1.1.1.1/Sat May  3 17:13:10 2008//
+/stdinc.c/1.1.1.1/Sat May  3 17:13:08 2008//
+/subset.c/1.1.1.1/Sat May  3 17:13:08 2008//
+/subset.h/1.1.1.1/Sat May  3 17:13:10 2008//
+/trace.c/1.3/Sat May  3 17:13:08 2008//
+/trace.h/1.2/Sat May  3 17:13:10 2008//
+/wgraph.c/1.1.1.1/Sat May  3 17:13:08 2008//
+/wgraph.h/1.1.1.1/Sat May  3 17:13:10 2008//
+/dfa.c/1.4/Sat May  3 17:13:06 2008//
+/dfa.h/1.2/Sat May  3 17:13:10 2008//
+/kdfa.c/1.1/Sat May  3 17:13:06 2008//
+/kdfa.h/1.1/Sat May  3 17:13:10 2008//
+/knfa.c/1.1/Sat May  3 17:13:06 2008//
+/knfa.h/1.1/Sat May  3 17:13:10 2008//
+/large_array.c/1.1/Sat May  3 17:13:06 2008//
+/large_array.h/1.1/Sat May  3 17:13:10 2008//
+/linked_set.c/1.2/Sat May  3 17:13:06 2008//
+/linked_set.h/1.2/Sat May  3 17:13:10 2008//
+/main.c/1.4/Sat May  3 17:13:06 2008//
+/makefile/1.3/Sat May  3 17:13:16 2008//
+/nfa.c/1.7/Sat May  3 17:13:06 2008//
+/parser.c/1.3/Sat May  3 17:13:08 2008//
+/reduction.c/1.1/Sat May  3 17:13:08 2008//
+/reduction.h/1.1/Sat May  3 17:13:10 2008//
+/stdinc.h/1.2/Sat May  3 17:13:10 2008//
