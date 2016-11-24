@@ -44,7 +44,7 @@
 #include "stdinc.h"
 #include "partition.h"
 
-partition::partition(int N) {
+partitionX::partitionX(int N) {
 // Initialize partition so that every element is in separate set.
 	n = N;
 	vec = new pnode[n+1];
@@ -55,21 +55,21 @@ partition::partition(int N) {
 	vec[Null].p = Null; vec[Null].rank = 0;
 }
 
-partition::~partition() { delete [] vec; }
+partitionX::~partitionX() { delete [] vec; }
 
-void partition::reset(int x){
+void partitionX::reset(int x){
 	vec[x].p=x;
 	vec[x].rank=0;
 }
 
-int partition::find(int x) {
+int partitionX::find(int x) {
 // Find and return the canonical element of the set containing x.
 	nfind++;
 	if (x != vec[x].p) vec[x].p = find(vec[x].p);
 	return vec[x].p;
 }
 
-int partition::link(int x, int y) {
+int partitionX::link(int x, int y) {
 // Combine the sets whose canonical elements are x and y.
 // Return the canonical element of the new set.
 	if (vec[x].rank > vec[y].rank) {
@@ -80,14 +80,14 @@ int partition::link(int x, int y) {
 	return y;
 }
 
-int partition::findroot(int x) {
+int partitionX::findroot(int x) {
 // Return the canonical element of the set containing x.
 // Do not restructure tree in the process.
 	if (x == vec[x].p) return(x);
 	else return findroot(vec[x].p);
 }
 
-void partition::print() {
+void partitionX::print() {
 // Print the partition.
 	int i,j; int *root = new int[n+1];
 	for (i = 1; i <= n; i++) root[i] = findroot(i);

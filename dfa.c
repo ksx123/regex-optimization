@@ -139,6 +139,19 @@ void DFA::dump(FILE *log){
     }
 }
 
+int DFA::match(char * str){
+  int i = 0;
+  state_t current = 0;
+  while(str[i]!=0){
+    current = state_table[current][str[i]];
+    if(!accepted_rules[current]->empty()){
+      return 1;
+    }
+    i++;
+  }
+  return 0;
+}
+
 /**
    * Minimization algorithm
    */
@@ -1121,7 +1134,7 @@ void update_distance(wgraph *G, wgraph *T, dheap *heap, int *distance, vertex u,
 } 
 
 //modified Kruskal's algorithm for D2FA generation
-void kruskal(wgraph *G, wgraph *T, partition *P, int *distance, int diameter, bool refined){
+void kruskal(wgraph *G, wgraph *T, partitionX *P, int *distance, int diameter, bool refined){
 	vertex u,v,cu,cv; edge e;
 	int d_u,d_v;
     dheap *heap=new dheap(G->m,3);
@@ -1148,7 +1161,7 @@ void kruskal(wgraph *G, wgraph *T, partition *P, int *distance, int diameter, bo
 }
 
 // generates default and labeled transitions for a D2FA 
-void DFA::d2fa_graph_to_default_tx(wgraph *T,partition *P,int *distance){
+void DFA::d2fa_graph_to_default_tx(wgraph *T,partitionX *P,int *distance){
 	//init default_tx and labeled_tx
 	if (default_tx==NULL) default_tx=allocate_state_array(_size);
 	for (state_t s=0;s<_size;s++) default_tx[s]=NO_STATE;
@@ -1220,7 +1233,7 @@ void DFA::D2FA(int diameter, bool refined){
 	gettimeofday(&start,NULL);
 	wgraph *T=new wgraph(_size,_size-1); //undirected forest of tree of failure ptrs;
 	wgraph *G; 							 //space reduction graph
-	partition *P=new partition(_size);   //partition data structure used by Kruskal algorithm
+	partitionX *P=new partitionX(_size);   //partition data structure used by Kruskal algorithm
 	int *distance=new int[_size];		 //distance vector
 	for (state_t s=0;s<_size;s++) distance[s]=0;
 	int DECREMENT=32;  /* IMPORTANT: This variable has been introduced to deal with big DFAs which
@@ -1292,7 +1305,7 @@ unsigned tree_w(wgraph *T, state_t state){
 }
 		
 //creation phase for C2DFA algorithm		
-void creation_phase(wgraph *G, wgraph *T, partition *P, int *distance, unsigned *in_degree, unsigned max_in_degree){
+void creation_phase(wgraph *G, wgraph *T, partitionX *P, int *distance, unsigned *in_degree, unsigned max_in_degree){
 	vertex u,v,cu,cv; edge e;
 	int d_u,d_v;
     dheap *heap=new dheap(G->m,3);
@@ -1318,7 +1331,7 @@ void creation_phase(wgraph *G, wgraph *T, partition *P, int *distance, unsigned 
 }
 
 //reduction phase for C2DFA algorithm
-unsigned reduction_phase(wgraph *G, wgraph *T, partition *P, int *distance, unsigned *in_degree){
+unsigned reduction_phase(wgraph *G, wgraph *T, partitionX *P, int *distance, unsigned *in_degree){
 	state_t *root=new state_t[G->n];
 	for (state_t s=0;s<G->n;s++) root[s]=NO_STATE;
 	for (state_t s=0;s<G->n;s++){
@@ -1417,7 +1430,7 @@ unsigned reduction_phase(wgraph *G, wgraph *T, partition *P, int *distance, unsi
 }
 
 //optimization phase for C2DFA algorithm
-unsigned optimization_phase(wgraph *G, wgraph *T, partition *P, int *distance, unsigned *in_degree){
+unsigned optimization_phase(wgraph *G, wgraph *T, partitionX *P, int *distance, unsigned *in_degree){
 	linked_set *root=new linked_set();
 	linked_set *ls=new linked_set();
 	int *bound=new int[T->n];
@@ -1472,7 +1485,7 @@ unsigned DFA::CD2FA(){
 	gettimeofday(&start,NULL);
 	wgraph *T=new wgraph(_size,1000000); //undirected forest of tree of failure ptrs;
 	wgraph *G; //support graph
-	partition *P=new partition(_size); //partition data structure used by Kruskal algorithm
+	partitionX *P=new partitionX(_size); //partition data structure used by Kruskal algorithm
 	int *distance=new int[_size];
 	unsigned *in_degree=new unsigned[_size];
 	unsigned max_in_degree=0;

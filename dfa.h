@@ -116,7 +116,7 @@ private:
 	/* builds the default and the labeled transitions for a D2FA starting from
 	 * the forest, the partition data structure and the distance vector 
 	 */	
-	void d2fa_graph_to_default_tx(wgraph *T,partition *P,int *d);
+	void d2fa_graph_to_default_tx(wgraph *T,partitionX *P,int *d);
 	
 public:	
 
@@ -137,6 +137,8 @@ public:
 
 	/* Adds a state and returns its identifier. Allocates the necessary data structures */
 	state_t add_state();
+	
+	int match(char * str);	
 
 	/* adds a transition from old_state to new_state on symbol c */
 	void add_transition(state_t old_state, symbol_t c, state_t new_state);

@@ -46,14 +46,14 @@
 #ifndef __PARTITION_H
 #define __PARTITION_H
 
-class partition {
+class partitionX {
 	int	n;			// partition is on {1,...,n}
 	struct pnode { int rank,p; }	// vec[x].rank is rank of x
 		*vec;			// vec[x].p is parent of x
 	int	nfind;			// count number of find calls
 	int	findroot(int);		// return root without compressing
-public:		partition(int=100);
-		~partition();
+public:		partitionX(int=100);
+		~partitionX();
 	int	find(int);		// return root (canonical element)
 	int	link(int,int);		// combine two sets
 	int	findcount();		// return nfind
@@ -61,7 +61,7 @@ public:		partition(int=100);
 	void    reset(int x); //reset element x
 };
 
-inline int partition::findcount() { return nfind; }
+inline int partitionX::findcount() { return nfind; }
 
 #endif //__PARTITION_H
 
