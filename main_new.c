@@ -5,6 +5,7 @@
 // #include "hybrid_fa.h"
 #include "parser.h"
 // #include "trace.h"
+#include "rcdfa.h"
 
 int VERBOSE;
 int DEBUG = 1;
@@ -66,6 +67,18 @@ int main(int argc, char const *argv[])
 		fclose(dot_file);
 	}
 	printf("r = %d\n", dfa->match("asssssc d"));
+	RCDFA * rcdfa = new RCDFA(dfa);
+	if (rcdfa!=NULL){
+		char out_file[100];
+		sprintf(out_file,"%s_rcdfa", input_file);
+		FILE *dot_file=fopen(out_file ,"w");
+		fprintf(stderr,"\nExporting to DOT file %s ...\n", out_file);
+		char string[100];
+		sprintf(string,"source: %s", input_file);
+		rcdfa->to_dot(dot_file, string);
+		fclose(dot_file);
+	}
+	delete rcdfa;
 	delete dfa;
 	delete nfa;
 	return 0;

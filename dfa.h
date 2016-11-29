@@ -82,7 +82,7 @@ typedef list<tx_t> tx_list;
 
 
 class DFA {
-
+protected:
 		/*number of states in the DFA*/
         unsigned _size;
 
