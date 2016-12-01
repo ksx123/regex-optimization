@@ -37,7 +37,6 @@ RCDFA::RCDFA(DFA* dfa) : DFA(dfa->size()){
 
 					bool range=true;
 					int begin_range=c;
-					printf("%d -> %d\n", s, target);
 					for(int d=c+1;d<CSIZE;d++){
 						if(state_table[s][d]==target){
 							// printf("\t%d -> %d = %d\n", s, d, target);
@@ -68,6 +67,42 @@ RCDFA::RCDFA(DFA* dfa) : DFA(dfa->size()){
 	free(mark);
 }
 
+RCDFA::~RCDFA() {
+	for (state_t s=0;s<_size;s++){
+		list_re * re_list = range_edges_table[s];
+		for(list_re::iterator it= re_list->begin();it!=re_list->end();++it){
+			free(*it);
+		}
+		free(re_list);
+	}
+	delete range_edges_table;
+
+}
+
+int RCDFA::match(char * str){
+  int i = 0;
+  state_t current = 0;
+  while(str[i]!=0){
+  	list_re * re_list = range_edges_table[current];
+  	int finded = 0;
+  	for(list_re::iterator it= re_list->begin();it!=re_list->end();++it){
+  		if(str[i] >= (*it)->start && str[i] <= (*it)->end){
+  			current = (*it) -> target;
+  			finded = 1;
+  			break;
+  		}
+  	}
+  	if(!finded){
+  		return 0;
+  	}
+    if(!accepted_rules[current]->empty()){
+      return 1;
+    }
+    i++;
+  }
+  return 0;
+}
+
 void RCDFA::to_dot(FILE *file, const char *title){
 	// set_depth();
 	fprintf(file, "digraph \"%s\" {\n", title);
@@ -95,7 +130,6 @@ void RCDFA::to_dot(FILE *file, const char *title){
 	state_t target=NO_STATE;
 	for (state_t s=0;s<_size;s++){
 		list_re * re_list = range_edges_table[s];
-		printf("%d size = %d\n", s, range_edges_table[s]->size());
 		for(list_re::iterator it= re_list->begin();it!=re_list->end();++it){
 			char c;
 			label=(char *)malloc(100);

@@ -38,8 +38,8 @@ main_tracegen: stdinc.o int_set.o linked_set.o dheap.o partition.o wgraph.o cach
 main_regexgen: stdinc.o main_regexgen.o 
 	${CC} ${CFLAGS} stdinc.o main_regexgen.o -o regex_gen 
 
-main_new: stdinc.o int_set.o linked_set.o dheap.o subset.o partition.o wgraph.o nfa.o dfa.o parser.o rcdfa.o main_new.o 
-	${CC} ${CFLAGS} stdinc.o int_set.o linked_set.o dheap.o subset.o partition.o wgraph.o nfa.o dfa.o parser.o rcdfa.o main_new.o -o regex_new
+main_new: stdinc.o int_set.o linked_set.o dheap.o subset.o partition.o wgraph.o nfa.o dfa.o parser.o rcdfa.o mdfa.o main_new.o 
+	${CC} ${CFLAGS} stdinc.o int_set.o linked_set.o dheap.o subset.o partition.o wgraph.o nfa.o dfa.o parser.o rcdfa.o mdfa.o main_new.o -o regex_new
 
 exe:
 	-chmod a+x regex*

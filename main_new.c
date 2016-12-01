@@ -6,6 +6,7 @@
 #include "parser.h"
 // #include "trace.h"
 #include "rcdfa.h"
+#include "mdfa.h"
 
 int VERBOSE;
 int DEBUG = 1;
@@ -55,6 +56,7 @@ int main(int argc, char const *argv[])
 			nfa->to_dot(nfa_dot_file, string);
 			fclose(nfa_dot_file);
 	}
+	char * str = "asssssc d";
 	dfa=nfa->nfa2dfa();
 	if (dfa!=NULL){
 		char out_file[100];
@@ -65,8 +67,8 @@ int main(int argc, char const *argv[])
 		sprintf(string,"source: %s", input_file);
 		dfa->to_dot(dot_file, string);
 		fclose(dot_file);
+		printf("r1 = %d\n", dfa->match(str));
 	}
-	printf("r = %d\n", dfa->match("asssssc d"));
 	RCDFA * rcdfa = new RCDFA(dfa);
 	if (rcdfa!=NULL){
 		char out_file[100];
@@ -77,7 +79,13 @@ int main(int argc, char const *argv[])
 		sprintf(string,"source: %s", input_file);
 		rcdfa->to_dot(dot_file, string);
 		fclose(dot_file);
+		printf("r2 = %d\n", rcdfa->match(str));
 	}
+	DFA ** dfas = (DFA **) allocate_array(10, sizeof(DFA*));
+	dfas[0] = dfa;
+	MDFA * mdfa = new MDFA(dfas, 1);
+	printf("%p\n", mdfa);
+	delete mdfa;
 	delete rcdfa;
 	delete dfa;
 	delete nfa;

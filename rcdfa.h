@@ -22,7 +22,11 @@ public:
 	RCDFA(unsigned=50);
 	RCDFA(DFA* dfa);
 
+	~RCDFA();
+
 	void to_dot(FILE *file, const char *title);
+	
+	int match(char * str);
 };
 
 #endif /*__DFA_H*/
