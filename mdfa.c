@@ -3,12 +3,12 @@
 #define _MAX_SIZE 100
 
 
-MDFA::MDFA(dfa_array dfas, int size){
+MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
 	unsigned int g[size][size];
 	unsigned int V[size];
 	for (int i = 0; i < size; ++i){
 		for (int j = i + 1; j < size; ++j){
-			g[i][j] = is_interaction(dfas[i], dfas[j]);
+			g[i][j] = is_interaction(nfas[i], nfas[j], dfas[i]->size(), dfas[j]->size());
 		}
 	}
 	for(int i=0;i<size;++i) V[i] = 1;
@@ -27,8 +27,15 @@ MDFA::MDFA(dfa_array dfas, int size){
 	}
 }
 
-int MDFA::is_interaction(DFA* a, DFA* b) {
-	return 0;
+int MDFA::is_interaction(NFA* a, NFA* b, int a_size, int b_size) {
+	NFA * new_fa = new NFA();
+	new_fa->link(a);
+	new_fa->link(b);
+	new_fa->remove_epsilon();
+	new_fa->reduce();
+	DFA* dfa = new_fa->nfa2dfa();
+	dfa->minimize();
+	return dfa->size() > (a_size + b_size);
 }
 
 int MDFA::has_items(unsigned int * V, int size) {

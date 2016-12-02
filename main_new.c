@@ -56,8 +56,19 @@ int main(int argc, char const *argv[])
 			nfa->to_dot(nfa_dot_file, string);
 			fclose(nfa_dot_file);
 	}
-	char * str = "asssssc d";
 	dfa=nfa->nfa2dfa();
+	if (dfa!=NULL){
+		char out_file[100];
+		sprintf(out_file,"%s_dfa", input_file);
+		FILE *dot_file=fopen(out_file ,"w");
+		fprintf(stderr,"\nExporting to DOT file %s ...\n", out_file);
+		char string[100];
+		sprintf(string,"source: %s", input_file);
+		dfa->to_dot(dot_file, string);
+		fclose(dot_file);
+	}
+	char * str = "asssssc d";
+	dfa->minimize();
 	if (dfa!=NULL){
 		char out_file[100];
 		sprintf(out_file,"%s_dfa", input_file);
@@ -82,8 +93,10 @@ int main(int argc, char const *argv[])
 		printf("r2 = %d\n", rcdfa->match(str));
 	}
 	DFA ** dfas = (DFA **) allocate_array(10, sizeof(DFA*));
+	NFA ** nfas = (NFA **) allocate_array(10, sizeof(NFA*));
 	dfas[0] = dfa;
-	MDFA * mdfa = new MDFA(dfas, 1);
+	nfas[0] = nfa;
+	MDFA * mdfa = new MDFA(dfas, nfas, 1);
 	printf("%p\n", mdfa);
 	delete mdfa;
 	delete rcdfa;
