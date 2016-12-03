@@ -1,4 +1,5 @@
 #include "mdfa.h"
+#include "rcdfa.h"
 
 #define _MAX_SIZE 100
 
@@ -13,18 +14,66 @@ MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
 	}
 	for(int i=0;i<size;++i) V[i] = 1;
 	
+	dfa_groups = new list<dfa_nfa_list*>();
 	while(has_items(V, size)){
-		dfa_list* dl = new dfa_list();
+		dfa_nfa_list* dnl = new dfa_nfa_list();
 		unsigned int in_set[size];
 		for(int i=0;i<size;++i) in_set[i] = 0;
-		while(!is_limited(dl)){
+		while(!is_limited(dnl)){
 			int dfa_index = get_next_dfa(in_set, V, (unsigned int**)g, size);
 			V[dfa_index] = 0;
 			in_set[dfa_index] = 1;
-			dl->push_back(dfas[dfa_index]);
+			dfa_nfa *p = new dfa_nfa();
+			p->first = dfas[dfa_index];
+			p->second = nfas[dfa_index];
+			dnl->push_back(p);
 		}
-		dfa_groups.push_back(dl);
+		dfa_groups->push_back(dnl);
 	}
+	this->dfas = NULL;
+}
+
+MDFA::~MDFA() {
+	delete dfa_groups;
+	if(dfas != NULL){
+		delete dfas;	
+	}
+}
+
+void MDFA::build() {
+	dfas = new dfa_list();
+	for(list<dfa_nfa_list*>::iterator it=dfa_groups->begin(); it!=dfa_groups->end(); ++it){
+		dfa_nfa_list* ds = (*it);
+		NFA * new_fa = new NFA();
+		for(dfa_nfa_list::iterator iit=ds->begin(); iit!=ds->end(); ++iit){
+			new_fa->link((*iit)->second);
+		}
+		new_fa->remove_epsilon();
+		new_fa->reduce();
+		DFA* dfa = new_fa->nfa2dfa();
+		dfa->minimize();
+
+		dfas->push_back(dfa);
+	}
+}
+
+void MDFA::toRCDFA() {
+	dfa_list * ds = new dfa_list();
+	for(dfa_list::iterator i = dfas->begin(); i != dfas->end(); ++i){
+		RCDFA * rcdfa = new RCDFA(*i);
+		ds->push_back(rcdfa);
+		delete *i;
+	}
+	delete dfas;
+	dfas = ds;
+}
+
+int MDFA::match(char * str){
+	int sum = 0;
+	for(dfa_list::iterator i = dfas->begin(); i != dfas->end(); ++i){
+		sum += (*i)->match(str);
+	}
+	return sum;
 }
 
 int MDFA::is_interaction(NFA* a, NFA* b, int a_size, int b_size) {
@@ -46,10 +95,10 @@ int MDFA::has_items(unsigned int * V, int size) {
 	return 0;
 }
 
-int MDFA::is_limited(dfa_list* dl) {
+int MDFA::is_limited(dfa_nfa_list* dnl) {
 	int sum = 0;
-	for(dfa_list::iterator it= dl->begin(); it!=dl->end();++it){
-		sum += (*it)->size();
+	for(dfa_nfa_list::iterator it=dnl->begin(); it!=dnl->end();++it){
+		sum += (*it)->first->size();
 	}
 	if(sum >= _MAX_SIZE) return 1;
 	return 0;

@@ -89,6 +89,8 @@ public:
 	
 	//parses all the regular expressions contained in file and returns the corresponding NFA
 	NFA *parse(FILE *file, int from=1, int to=-1);
+
+	list<NFA *>* parse_to_list(FILE *file, int * size, int from=1, int to=-1);
 	
 	//parses all the regular expressions containted in file and returns a set of DFAs
 	dfa_set *parse_to_dfa(FILE *file);

@@ -49,6 +49,91 @@ regex_parser::regex_parser(bool i_mod, bool m_mod){
 
 regex_parser::~regex_parser(){;}
 
+list<NFA *>* regex_parser::parse_to_list(FILE *file, int * size, int from, int to){
+	rewind(file);
+	char *re=allocate_char_array(1000);
+	int i=0;
+	int j=0;
+	unsigned int c=fgetc(file);
+	list<NFA *>* nfa_list = new list<NFA *>();
+	
+	//parsing the RegEx and putting them in a NFA
+	while(c!=EOF){
+		if (c=='\n' || c=='\r'){
+			if(i!=0){
+				re[i]='\0';
+				if (re[0]!='#'){
+					j++;
+					if (j>=from && (to==-1 || j<=to)){
+						if (DEBUG) fprintf(stdout,"\n%d) processing regex:: <%s> ...\n",j,re);
+						// NFA
+						NFA *nfa=new NFA(); 
+						NFA *non_anchored = nfa->add_epsilon(); // for .* RegEx
+						NFA *anchored = nfa->add_epsilon(); // for anchored RegEx (^)
+						parse_re(nfa, re);
+						//handle -m modifier
+						if (m_modifier && (!anchored->get_epsilon()->empty() || !anchored->get_transitions()->empty())){
+							non_anchored->add_transition('\n',anchored);
+							non_anchored->add_transition('\r',anchored);
+						}
+						
+						//delete non_anchored, if necessary
+						if(non_anchored->get_epsilon()->empty() && non_anchored->get_transitions()->empty()){
+							nfa->get_epsilon()->remove(non_anchored);
+							delete non_anchored;
+						}else{
+							non_anchored->add_any(non_anchored);
+						}
+						nfa_list->push_back(nfa->get_first());
+						
+					}
+				} 
+				i=0;
+				free(re);
+				re=allocate_char_array(1000);
+			}
+		}else{
+			re[i++]=c;
+		}	
+		c=fgetc(file);
+	} //end while
+	
+	if(i!=0){
+		re[i]='\0';
+		if (re[0]!= '#'){
+			j++;
+			if (j>=from && (to==-1 || j<=to)){
+				if (DEBUG) fprintf(stdout,"\n%d) processing regex:: <%s> ...\n",j,re);
+				NFA *nfa=new NFA(); 
+				NFA *non_anchored = nfa->add_epsilon(); // for .* RegEx
+				NFA *anchored = nfa->add_epsilon(); // for anchored RegEx (^)
+				parse_re(nfa,re);
+				//handle -m modifier
+				if (m_modifier && (!anchored->get_epsilon()->empty() || !anchored->get_transitions()->empty())){
+					non_anchored->add_transition('\n',anchored);
+					non_anchored->add_transition('\r',anchored);
+				}
+				
+				//delete non_anchored, if necessary
+				if(non_anchored->get_epsilon()->empty() && non_anchored->get_transitions()->empty()){
+					nfa->get_epsilon()->remove(non_anchored);
+					delete non_anchored;
+				}else{
+					non_anchored->add_any(non_anchored);
+				}
+				nfa_list->push_back(nfa->get_first());
+			}
+		}
+		free(re);
+		re=NULL;
+	}
+	if (DEBUG) fprintf(stdout, "\nAll RegEx processed\n");
+	
+	if (re!=NULL) free(re);
+	
+	return nfa_list;
+}
+
 
 NFA *regex_parser::parse(FILE *file, int from, int to){
 	rewind(file);
