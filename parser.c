@@ -56,6 +56,7 @@ list<NFA *>* regex_parser::parse_to_list(FILE *file, int * size, int from, int t
 	int j=0;
 	unsigned int c=fgetc(file);
 	list<NFA *>* nfa_list = new list<NFA *>();
+	*size = 0;
 	
 	//parsing the RegEx and putting them in a NFA
 	while(c!=EOF){
@@ -85,6 +86,7 @@ list<NFA *>* regex_parser::parse_to_list(FILE *file, int * size, int from, int t
 							non_anchored->add_any(non_anchored);
 						}
 						nfa_list->push_back(nfa->get_first());
+						(*size)++;
 						
 					}
 				} 
@@ -122,6 +124,7 @@ list<NFA *>* regex_parser::parse_to_list(FILE *file, int * size, int from, int t
 					non_anchored->add_any(non_anchored);
 				}
 				nfa_list->push_back(nfa->get_first());
+				(*size)++;
 			}
 		}
 		free(re);

@@ -137,6 +137,7 @@ class NFA{
 	/* pointer to last state in the finite state machine the NFA-state belongs to */
 	NFA *last;
 	
+	NFA *cloned_nfa;
 public:
 
 	/* indicate whether the regular expression has the ignore case option or not */
@@ -152,6 +153,8 @@ public:
 	
 	/* (recursive) de-allocator */
 	~NFA();
+
+	NFA* clone();
 	
 	/*
 	 * FUNCTIONS TO QUERY A NFA STATE 

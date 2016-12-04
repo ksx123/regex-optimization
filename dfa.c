@@ -139,6 +139,19 @@ void DFA::dump(FILE *log){
     }
 }
 
+
+int DFA::match(FILE *file){
+  state_t current = 0;
+  unsigned int c = fgetc(file); 
+  while(c!=EOF){
+    current = state_table[current][c];
+    if(!accepted_rules[current]->empty()){
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int DFA::match(char * str){
   int i = 0;
   state_t current = 0;

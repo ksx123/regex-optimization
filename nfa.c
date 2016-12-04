@@ -66,6 +66,7 @@ NFA::NFA(){
 	depth=UNDEFINED;
 	first=this;
 	last=this;
+	cloned_nfa=NULL;
 }
 
 /* destructor */
@@ -85,6 +86,45 @@ NFA::~NFA(){
 	delete transitions;
 	if (epsilon!=NULL) delete epsilon;
 	delete accepting;
+}
+
+NFA* NFA::clone() {
+	nfa_list *queue=new nfa_list();
+	traverse(queue);
+	FOREACH_LIST(queue, nit){
+		NFA * new_nfa = new NFA();
+		(*nit)->cloned_nfa = new_nfa;
+	}
+
+	FOREACH_LIST(queue, nit){
+		//clone epsilon
+		NFA * new_nfa = (*nit)->cloned_nfa;
+		new_nfa->epsilon = new nfa_list();
+		FOREACH_LIST((*nit)->epsilon,it){
+			NFA *nfa=*it;
+			new_nfa->epsilon->push_back(nfa->cloned_nfa);
+		}
+
+		//clone transitions
+		new_nfa->transitions = new pair_set();
+		FOREACH_PAIRSET((*nit)->transitions,it){
+			pair<unsigned,NFA *> *tr=new pair<unsigned,NFA *>((*it)->first,(*it)->second->cloned_nfa);
+			new_nfa->transitions->insert(tr);
+		}
+
+		new_nfa->accepting = new linked_set();
+		new_nfa->accepting->add((*nit)->accepting);
+		new_nfa->id = (*nit)->id;
+		new_nfa->depth = (*nit)->depth;
+		new_nfa->first = (*nit)->first->cloned_nfa;
+		new_nfa->last = (*nit)->last->cloned_nfa;
+	}
+
+	NFA* new_nfa = queue->front()->cloned_nfa;
+	FOREACH_LIST(queue, nit){
+		(*nit)->cloned_nfa = NULL;
+	}
+	return new_nfa;
 }
 
 /* Builds a queue of states which can be reached from the current one.
@@ -693,7 +733,6 @@ NFA *NFA::link(NFA *fa){
 		}	
 	}
 	delete queue;
-	
 	//copy transitions
 	FOREACH_PAIRSET(second->transitions,it){ 
 		this->add_transition((*it)->first,(*it)->second);
@@ -703,7 +742,7 @@ NFA *NFA::link(NFA *fa){
 	
 	this->get_last()->last = second->get_last();
 	this->last = second->get_last();
-	
+
 	second->delete_only_me=1;
 	delete second;		
 	

@@ -26,6 +26,7 @@ public:
 
 	void to_dot(FILE *file, const char *title);
 	
+	int match(FILE *file);
 	int match(char * str);
 };
 

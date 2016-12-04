@@ -138,7 +138,8 @@ public:
 	/* Adds a state and returns its identifier. Allocates the necessary data structures */
 	state_t add_state();
 	
-	int match(char * str);	
+	virtual int match(FILE *file);
+	virtual int match(char * str);	
 
 	/* adds a transition from old_state to new_state on symbol c */
 	void add_transition(state_t old_state, symbol_t c, state_t new_state);
@@ -188,7 +189,7 @@ public:
 	/* exports the DFA to DOT format 
 	 * download tool to produce visual representation from: http://www.graphviz.org/
 	 */
-	void to_dot(FILE *file, const char *title);
+	virtual void to_dot(FILE *file, const char *title);
 	
 	/* dumps the DFA into file for later import */
 	void put(FILE *file, char *comment=NULL);

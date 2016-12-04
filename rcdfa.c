@@ -79,6 +79,30 @@ RCDFA::~RCDFA() {
 
 }
 
+int RCDFA::match(FILE *file){
+  state_t current = 0;
+  unsigned int c = fgetc(file); 
+  while(c!=EOF){
+    list_re * re_list = range_edges_table[current];
+  	int finded = 0;
+  	for(list_re::iterator it= re_list->begin();it!=re_list->end();++it){
+  		if(c >= (*it)->start && c <= (*it)->end){
+  			current = (*it) -> target;
+  			finded = 1;
+  			break;
+  		}
+  	}
+  	if(!finded){
+  		return 0;
+  	}
+    if(!accepted_rules[current]->empty()){
+      return 1;
+    }
+    c = fgetc(file);
+  }
+  return 0;
+}
+
 int RCDFA::match(char * str){
   int i = 0;
   state_t current = 0;

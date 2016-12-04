@@ -26,14 +26,17 @@ public:
 	void toRCDFA();
 
 	int match(char * str);
+	int match(FILE *file);
 
+	dfa_list* get_dfas();
 private:
 	int is_interaction(NFA* a, NFA* b, int a_size, int b_size);
 	int has_items(unsigned int * V, int size);
 	int is_limited(dfa_nfa_list* dnl);
-	int get_next_dfa(unsigned int * in_set, unsigned int * V, unsigned int** E, int size);
+	int get_next_dfa(unsigned int * in_set, unsigned int * V, unsigned int* E, int size);
 };
 
+inline dfa_list* MDFA::get_dfas() {return dfas;}
 
 
 

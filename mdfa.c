@@ -1,7 +1,7 @@
 #include "mdfa.h"
 #include "rcdfa.h"
 
-#define _MAX_SIZE 100
+#define _MAX_SIZE 200
 
 
 MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
@@ -19,8 +19,8 @@ MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
 		dfa_nfa_list* dnl = new dfa_nfa_list();
 		unsigned int in_set[size];
 		for(int i=0;i<size;++i) in_set[i] = 0;
-		while(!is_limited(dnl)){
-			int dfa_index = get_next_dfa(in_set, V, (unsigned int**)g, size);
+		while(!is_limited(dnl) && has_items(V, size)){
+			int dfa_index = get_next_dfa(in_set, V, (unsigned int*)g, size);
 			V[dfa_index] = 0;
 			in_set[dfa_index] = 1;
 			dfa_nfa *p = new dfa_nfa();
@@ -44,16 +44,20 @@ void MDFA::build() {
 	dfas = new dfa_list();
 	for(list<dfa_nfa_list*>::iterator it=dfa_groups->begin(); it!=dfa_groups->end(); ++it){
 		dfa_nfa_list* ds = (*it);
-		NFA * new_fa = new NFA();
+		NFA * new_fa = NULL;
 		for(dfa_nfa_list::iterator iit=ds->begin(); iit!=ds->end(); ++iit){
-			new_fa->link((*iit)->second);
+			if(new_fa == NULL){
+				new_fa = (*iit)->second;
+			}else{
+				new_fa = new_fa->make_or((*iit)->second);
+			}
 		}
 		new_fa->remove_epsilon();
 		new_fa->reduce();
 		DFA* dfa = new_fa->nfa2dfa();
 		dfa->minimize();
-
 		dfas->push_back(dfa);
+		delete new_fa;
 	}
 }
 
@@ -68,6 +72,14 @@ void MDFA::toRCDFA() {
 	dfas = ds;
 }
 
+int MDFA::match(FILE *file){
+	int sum = 0;
+	for(dfa_list::iterator i = dfas->begin(); i != dfas->end(); ++i){
+		sum += (*i)->match(file);
+	}
+	return sum;
+}
+
 int MDFA::match(char * str){
 	int sum = 0;
 	for(dfa_list::iterator i = dfas->begin(); i != dfas->end(); ++i){
@@ -77,14 +89,17 @@ int MDFA::match(char * str){
 }
 
 int MDFA::is_interaction(NFA* a, NFA* b, int a_size, int b_size) {
-	NFA * new_fa = new NFA();
-	new_fa->link(a);
-	new_fa->link(b);
+	NFA* a_c = a->clone();
+	NFA* b_c = b->clone();
+	NFA * new_fa = a_c->make_or(b_c);
 	new_fa->remove_epsilon();
 	new_fa->reduce();
 	DFA* dfa = new_fa->nfa2dfa();
 	dfa->minimize();
-	return dfa->size() > (a_size + b_size);
+	int r = dfa->size() > (a_size + b_size);
+	delete new_fa;
+	delete dfa;
+	return r;
 }
 
 int MDFA::has_items(unsigned int * V, int size) {
@@ -104,7 +119,7 @@ int MDFA::is_limited(dfa_nfa_list* dnl) {
 	return 0;
 }
 
-int MDFA::get_next_dfa(unsigned int * in_set, unsigned int * V, unsigned int** E, int size){
+int MDFA::get_next_dfa(unsigned int * in_set, unsigned int * V, unsigned int* E, int size){
 	int min = -1;
 	int min_index = -1;
 
