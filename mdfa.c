@@ -52,6 +52,7 @@ void MDFA::build() {
 				new_fa = new_fa->make_or((*iit)->second);
 			}
 		}
+		new_fa = new_fa->get_first();
 		new_fa->remove_epsilon();
 		new_fa->reduce();
 		DFA* dfa = new_fa->nfa2dfa();
