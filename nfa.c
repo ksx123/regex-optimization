@@ -124,6 +124,7 @@ NFA* NFA::clone() {
 	FOREACH_LIST(queue, nit){
 		(*nit)->cloned_nfa = NULL;
 	}
+	delete queue;
 	return new_nfa;
 }
 

@@ -28,6 +28,10 @@ public:
 	
 	int match(FILE *file);
 	int match(char * str);
+
+	list_re** get_edges_table();
 };
+
+inline list_re** RCDFA::get_edges_table(){return range_edges_table;}
 
 #endif /*__DFA_H*/
