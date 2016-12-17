@@ -68,11 +68,14 @@ DFA::DFA(unsigned N){
 }
 
 DFA::~DFA(){
-	for(state_t i=0;i<_size;i++){
-		free(state_table[i]);
-		if (accepted_rules[i]) delete accepted_rules[i];
-	}
-	free(state_table);	
+  if(state_table!=NULL){
+    for(state_t i=0;i<_size;i++){
+      free(state_table[i]);
+      if (accepted_rules[i]) delete accepted_rules[i];
+    }
+    free(state_table);  
+  }
+	
 	free(accepted_rules);
 	if (default_tx!=NULL) free(default_tx);
 	if (labeled_tx!=NULL){

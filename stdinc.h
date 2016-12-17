@@ -66,7 +66,7 @@
 //#define TAIL_DFAS 		    // do we want to build tail-DFA and to have at most one activation of each tail?
 
 /* DFA contruction */
-#define MAX_DFA_SIZE 100000     //max size of a DFA
+#define MAX_DFA_SIZE 4294967295 //max size of a DFA
 
 
 /* type definitions: state identifiers and symbols */

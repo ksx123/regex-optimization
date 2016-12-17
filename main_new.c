@@ -2,7 +2,7 @@
 #include "stdinc.h"
 // #include "nfa.h"
 // #include "dfa.h"
-// #include "hybrid_fa.h"
+#include "hybrid_fa.h"
 #include "parser.h"
 // #include "trace.h"
 #include "rcdfa.h"
@@ -28,8 +28,15 @@ NFA* get_nfa_from_file(char const* file_name){
  	return nfa;
 }
 
-void doNFA(){
-	NFA* nfa = get_nfa_from_file("_test/r_test");
+void doNFA(char const * re_file_name){
+	struct timeb startTime , endTime;
+	ftime(&startTime);
+	NFA* nfa = get_nfa_from_file(re_file_name);
+	ftime(&endTime);
+	printf("time = %dms\n",(endTime.time*1000+endTime.millitm) - (startTime.time*1000 + startTime.millitm));
+	printf("\n按任意键继续...");
+	getchar();
+
 	int state_size = nfa->size();
 
 	int edge_count = 0;
@@ -60,25 +67,83 @@ int get_dfa_count(DFA* dfa, int * edge_count){
 	return s_count;
 }
 
-void doDFA(){
-	NFA* nfa = get_nfa_from_file("_test/r_test");
-	DFA* dfa = nfa->nfa2dfa();
-	dfa->minimize();
-	int edge_count;
-	int state_size = get_dfa_count(dfa, &edge_count);
+void doDFA(char const * re_file_name){
+	NFA* nfa;
+	DFA* dfa;
+	int edge_count=0;
+	int state_size=0;
+
+	struct timeb startTime , endTime;
+	ftime(&startTime);
+	FILE *regex_file=fopen(re_file_name, "r");
+	fprintf(stderr,"\nParsing the regular expression file %s ...\n", re_file_name);
+	regex_parser *p = new regex_parser(false, false);
+
+	int size;
+	list<NFA *>* nfa_list = p->parse_to_list(regex_file, &size);
+	list<DFA *>* dfa_list = new  list<DFA*>;
+	for(list<NFA *>::iterator it= nfa_list->begin(); it != nfa_list->end(); ++it){
+		nfa = *it;
+		nfa->remove_epsilon();
+		nfa->reduce();
+		dfa=nfa->nfa2dfa();
+		dfa->minimize();
+		dfa_list->push_back(dfa);
+		delete nfa;
+		int tmp_count;
+		state_size += get_dfa_count(dfa, &tmp_count);
+		edge_count += tmp_count;
+	}
+	delete nfa_list;
+	ftime(&endTime);
+	printf("time = %dms\n",(endTime.time*1000+endTime.millitm) - (startTime.time*1000 + startTime.millitm));
+	printf("\n按任意键继续...");
+	getchar();
 
 	printf("DFA state size:%d, edge count:%d\n", state_size, edge_count);
 }
 
-void doMDFA(){
+void doHFA(char const * re_file_name){
+	NFA* nfa;
+	int state_count = 0;
+	int edge_count = 0;
+
+	struct timeb startTime , endTime;
+	ftime(&startTime);
+	FILE *regex_file=fopen(re_file_name, "r");
+	fprintf(stderr,"\nParsing the regular expression file %s ...\n", re_file_name);
+	regex_parser *p = new regex_parser(false, false);
+
+	int size;
+	list<NFA *>* nfa_list = p->parse_to_list(regex_file, &size);
+	list<HybridFA*>* hfa_list = new list<HybridFA*>;
+	for(list<NFA *>::iterator it= nfa_list->begin(); it != nfa_list->end(); ++it){
+		nfa = *it;
+		nfa->remove_epsilon();
+		nfa->reduce();
+		HybridFA* hfa=new HybridFA(nfa);
+		hfa_list->push_back(hfa);
+		int tmp_count;
+		state_count += get_dfa_count(hfa->get_head(), &tmp_count);
+		edge_count += tmp_count;
+	}
+	delete nfa_list;
+	ftime(&endTime);
+	printf("time = %dms\n",(endTime.time*1000+endTime.millitm) - (startTime.time*1000 + startTime.millitm));
+	printf("\n按任意键继续...");
+	getchar();
+}
+
+void doMDFA(char const * re_file_name){
 	NFA *nfa=NULL; 
 	DFA *dfa=NULL;
 	int size;
 	int i = 0;
 	
-	char * input_file = "_test/r_test";
-	FILE *regex_file=fopen(input_file, "r");
-	fprintf(stderr,"\nParsing the regular expression file %s ...\n", input_file);
+	struct timeb startTime , endTime;
+	ftime(&startTime);
+	FILE *regex_file=fopen(re_file_name, "r");
+	fprintf(stderr,"\nParsing the regular expression file %s ...\n", re_file_name);
 	regex_parser *p = new regex_parser(false, false);
 
 	list<NFA *>* nfa_list = p->parse_to_list(regex_file, &size);
@@ -117,21 +182,24 @@ void doMDFA(){
 	delete dfas;
 	fclose(regex_file);
 	delete p;
+	ftime(&endTime);
+	printf("time = %dms\n",(endTime.time*1000+endTime.millitm) - (startTime.time*1000 + startTime.millitm));
+	printf("\n按任意键继续...");
+	getchar();
 	delete mdfa;
 }
 
-void doGCFA(){
-	struct timeb startTime , endTime;
+void doGCFA(char const * re_file_name){
 	NFA *nfa=NULL; 
 	DFA *dfa=NULL;
 	int size;
 	int i = 0;
 	
-	char * input_file = "_test/r_test";
-	FILE *regex_file=fopen(input_file, "r");
-	fprintf(stderr,"\nParsing the regular expression file %s ...\n", input_file);
+	struct timeb startTime , endTime;
+	ftime(&startTime);
+	FILE *regex_file=fopen(re_file_name, "r");
+	fprintf(stderr,"\nParsing the regular expression file %s ...\n", re_file_name);
 	regex_parser *p = new regex_parser(false, false);
-	// ftime(&startTime);
 	list<NFA *>* nfa_list = p->parse_to_list(regex_file, &size);
 	printf("size=%d\n", size);
 	DFA ** dfas = (DFA **) allocate_array(size, sizeof(DFA*));
@@ -145,15 +213,26 @@ void doGCFA(){
 		dfa->minimize();
 		dfas[i] = dfa;
 		nfas[i] = nfa;
-		// output_nfa(nfa, "_test/nfa", i);
-		// output_dfa(dfa, "_test/dfa", i);
 		i++;
 	}
-
 	MDFA * mdfa = new MDFA(dfas, nfas, size);
 	mdfa->build();
 	printf("%s\n", "build finish");
-	
+	ftime(&endTime);
+	printf("time = %dms\n",(endTime.time*1000+endTime.millitm) - (startTime.time*1000 + startTime.millitm));
+	delete nfas;
+	delete dfas;
+	delete nfa_list;
+	fclose(regex_file);
+	delete p;
+	printf("\n按任意键继续...");
+	getchar();
+
+	// FILE *input=fopen("../test_data1", "r");
+	// ftime(&startTime);
+	// int r = mdfa->match(input);
+	// ftime(&endTime);
+	// printf("r = %d, time = %d\n", r, (endTime.time*1000+endTime.millitm) - (startTime.time*1000 + startTime.millitm));
 	int state_size = 0;
 	int edge_count = 0;
 	dfa_list* ds = mdfa->get_dfas();
@@ -165,6 +244,7 @@ void doGCFA(){
 	}
 	printf("MDFA state size:%d, edge count:%d\n", state_size, edge_count);
 
+	// ftime(&startTime);
 	mdfa->toRCDFA();
 	printf("%s\n", "toRCDFA finish");
 	// ftime(&endTime);
@@ -185,38 +265,40 @@ void doGCFA(){
 	}
 	printf("GCFA state size:%d, edge count:%d\n", state_size, edge_count);
 	
-	delete nfas;
-	delete dfas;
-	fclose(regex_file);
-	delete p;
-
-	// printf("\n按任意键继续...");
-	// getchar();
+	printf("\n按任意键继续...");
+	getchar();
 	// ftime(&startTime);
 	// FILE *input=fopen("x1_size_s0_p0.35.trace", "r");
-	// int r = mdfa->match(input);
+	// r = mdfa->match(input);
 	// ftime(&endTime);
-	// printf("r = %d, time = %d.%d\n",endTime.time - startTime.time, endTime.millitm - startTime.millitm);
+	// printf("r = %d, time = %d\n", r, (endTime.time*1000+endTime.millitm) - (startTime.time*1000 + startTime.millitm));
 
 	delete mdfa;
+	printf("\n按任意键继续...");
+	getchar();
 }
 
 int main(int argc, char const *argv[])
 {
 	printf("%s argc=%d\n", "new main", argc);
-	if(argc>1){
-		if(strcmp(argv[1], "nfa")==0){
-			doNFA();
-		}else if (strcmp(argv[1], "dfa")==0){
-			doDFA();
-		}else if (strcmp(argv[1], "mdfa")==0){
-			doMDFA();
-		}else if (strcmp(argv[1], "gcfa")==0){
-			doGCFA();
+	if(argc>2){
+		printf("re file:%s\n", argv[1]);
+		if(strcmp(argv[2], "nfa")==0){
+			doNFA(argv[1]);
+		}else if (strcmp(argv[2], "dfa")==0){
+			doDFA(argv[1]);
+		}else if (strcmp(argv[2], "hfa")==0){
+			doHFA(argv[1]);
+		}else if (strcmp(argv[2], "mdfa")==0){
+			doMDFA(argv[1]);
+		}else if (strcmp(argv[2], "gcfa")==0){
+			doGCFA(argv[1]);
 		}else {
 			printf("%s\n", "UK type");
 		}
 	}
+	printf("\nEnd\n");
+	getchar();
 	return 0;
 }
 
