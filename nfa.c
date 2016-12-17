@@ -99,20 +99,16 @@ NFA* NFA::clone() {
 	FOREACH_LIST(queue, nit){
 		//clone epsilon
 		NFA * new_nfa = (*nit)->cloned_nfa;
-		new_nfa->epsilon = new nfa_list();
 		FOREACH_LIST((*nit)->epsilon,it){
 			NFA *nfa=*it;
 			new_nfa->epsilon->push_back(nfa->cloned_nfa);
 		}
 
 		//clone transitions
-		new_nfa->transitions = new pair_set();
 		FOREACH_PAIRSET((*nit)->transitions,it){
 			pair<unsigned,NFA *> *tr=new pair<unsigned,NFA *>((*it)->first,(*it)->second->cloned_nfa);
 			new_nfa->transitions->insert(tr);
 		}
-
-		new_nfa->accepting = new linked_set();
 		new_nfa->accepting->add((*nit)->accepting);
 		new_nfa->id = (*nit)->id;
 		new_nfa->depth = (*nit)->depth;

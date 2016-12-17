@@ -19,7 +19,9 @@ protected:
 	dfa_list* dfas;
 	
 public:
+	MDFA();
 	MDFA(dfa_array dfas, nfa_array nfas, int size);
+	MDFA(dfa_list* dfas);
 	~MDFA();
 
 	void build();

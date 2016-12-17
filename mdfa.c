@@ -32,11 +32,25 @@ MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
 	}
 	this->dfas = NULL;
 }
+MDFA::MDFA(){
+	dfa_groups = NULL;
+	dfas = NULL;
+}
+
+MDFA::MDFA(dfa_list* dfas){
+	this->dfa_groups = NULL;
+	this->dfas = dfas;
+}
 
 MDFA::~MDFA() {
-	delete dfa_groups;
+	if(dfa_groups!=NULL){
+		delete dfa_groups;
+	}
 	if(dfas != NULL){
-		delete dfas;	
+		for (dfa_list::iterator i = dfas->begin(); i != dfas->end(); ++i) {
+				delete *i;
+		}
+		delete dfas;
 	}
 }
 
@@ -51,6 +65,7 @@ void MDFA::build() {
 			}else{
 				new_fa = new_fa->make_or((*iit)->second);
 			}
+			delete (*iit)->first;
 		}
 		new_fa = new_fa->get_first();
 		new_fa->remove_epsilon();
@@ -60,6 +75,8 @@ void MDFA::build() {
 		dfas->push_back(dfa);
 		delete new_fa;
 	}
+	delete dfa_groups;
+	dfa_groups = NULL;
 }
 
 void MDFA::toRCDFA() {
@@ -93,6 +110,7 @@ int MDFA::is_interaction(NFA* a, NFA* b, int a_size, int b_size) {
 	NFA* a_c = a->clone();
 	NFA* b_c = b->clone();
 	NFA * new_fa = a_c->make_or(b_c);
+	new_fa = new_fa->get_first();
 	new_fa->remove_epsilon();
 	new_fa->reduce();
 	DFA* dfa = new_fa->nfa2dfa();

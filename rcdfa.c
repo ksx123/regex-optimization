@@ -6,6 +6,9 @@ RCDFA::RCDFA(unsigned N) : DFA(N){
 }
 
 RCDFA::RCDFA(DFA* dfa) : DFA(dfa->size()){
+	delete this->state_table;
+	this->state_table = NULL;
+
 	_size = dfa->size();
 	linked_set** o_accepted_rules = dfa-> get_accepted_rules();
 	state_t ** state_table = dfa->get_state_table();
@@ -80,23 +83,13 @@ RCDFA::~RCDFA() {
 }
 
 int RCDFA::match(FILE *file){
-   rewind(file);
+  rewind(file);
   state_t current = 0;
-  long long count = 0;
   unsigned int c = fgetc(file); 
-  printf("%d\n", c==EOF);
-  count++;
   while(c!=EOF){
     list_re * re_list = range_edges_table[current];
   	int finded = 0;
- //  	if ((c>='a' && c<='z') || (c>='A' && c<='Z')) {
-	// 	printf("check (%c)\n", c);
-	// }
-	// else{
-	// 	printf("check (%d)\n", c);
-	// }
   	for(list_re::iterator it= re_list->begin();it!=re_list->end();++it){
-  		// printf("range (%d,%d)\n", (*it)->start, (*it)->end);
   		if(c >= (*it)->start && c <= (*it)->end){
   			current = (*it) -> target;
   			finded = 1;
@@ -107,13 +100,10 @@ int RCDFA::match(FILE *file){
   		current = 0;
   	}
     if(!accepted_rules[current]->empty()){
-   	  printf("count %lld\n", count);
       return 1;
     }
     c = fgetc(file);
-    count++;
   }
-  printf("count %lld\n", count);
   return 0;
 }
 

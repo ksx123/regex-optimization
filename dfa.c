@@ -141,6 +141,7 @@ void DFA::dump(FILE *log){
 
 
 int DFA::match(FILE *file){
+  rewind(file);
   state_t current = 0;
   unsigned int c = fgetc(file); 
   while(c!=EOF){
@@ -148,6 +149,7 @@ int DFA::match(FILE *file){
     if(!accepted_rules[current]->empty()){
       return 1;
     }
+    c = fgetc(file);
   }
   return 0;
 }
