@@ -54,6 +54,17 @@ MDFA::~MDFA() {
 	}
 }
 
+unsigned int MDFA::get_m_size(){
+	unsigned int size_count = 0;
+	if(dfas != NULL){
+		for (dfa_list::iterator i = dfas->begin(); i != dfas->end(); ++i) {
+				size_count += (*i)->get_m_size();
+		}
+		size_count += sizeof(dfas) + dfas->size() * (16 + sizeof(DFA*)) + 24;
+	}
+	return size_count;
+}
+
 void MDFA::build() {
 	dfas = new dfa_list();
 	for(list<dfa_nfa_list*>::iterator it=dfa_groups->begin(); it!=dfa_groups->end(); ++it){

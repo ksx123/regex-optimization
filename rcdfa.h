@@ -24,6 +24,8 @@ public:
 
 	~RCDFA();
 
+	unsigned int get_m_size();
+	
 	void to_dot(FILE *file, const char *title);
 	
 	int match(FILE *file);

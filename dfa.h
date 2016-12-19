@@ -129,6 +129,8 @@ public:
 	/* returns the number of states in the DFA */
 	unsigned int size();
 
+	virtual unsigned int get_m_size();
+
 	/* sets the number of states in the DFA */
 	void set_size(unsigned int n);
 	

@@ -86,6 +86,29 @@ DFA::~DFA(){
 	if (depth!=NULL) free(depth);
 }
 
+
+unsigned unsigned int DFA::get_m_size(){
+  unsigned int size_count = sizeof(DFA);
+  if(state_table!=NULL){
+    for(state_t i=0;i<_size;i++){
+      size_count += sizeof(state_table[i]) + sizeof(*state_table[i]) * CSIZE;
+      if (accepted_rules[i]){
+        size_count += accepted_rules[i]->size() * sizeof(*accepted_rules[i]);
+      }
+    }
+  }
+  if (default_tx!=NULL) {
+    size_count += sizeof(*default_tx) * _size;
+  }
+  if (labeled_tx!=NULL){
+    for (state_t s=0;s<_size;s++) {
+      size_count += labeled_tx[s]->size() * (sizeof(tx_t) + 16) + 24 + sizeof(labeled_tx[s]);
+    }
+  }
+  size_count += sizeof(*marking) * entry_allocated;
+  return size_count;
+}
+
 bool DFA::equal(DFA *dfa){
 	if (_size!=dfa->_size) return false;
 	for (state_t s=0;s<_size;s++){

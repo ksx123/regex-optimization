@@ -88,6 +88,7 @@ void doDFA(char const * re_file_name){
 		nfa->reduce();
 		dfa=nfa->nfa2dfa();
 		dfa->minimize();
+		printf("%lu\n", dfa->get_m_size());
 		dfa_list->push_back(dfa);
 		delete nfa;
 		int tmp_count;
@@ -243,6 +244,7 @@ void doGCFA(char const * re_file_name){
 		edge_count += tmp_e;
 	}
 	printf("MDFA state size:%d, edge count:%d\n", state_size, edge_count);
+	printf("MDFA m_siz:%lu\n", mdfa->get_m_size());
 
 	// ftime(&startTime);
 	mdfa->toRCDFA();
@@ -264,7 +266,7 @@ void doGCFA(char const * re_file_name){
 		}
 	}
 	printf("GCFA state size:%d, edge count:%d\n", state_size, edge_count);
-	
+	printf("GCFA m_siz:%lu\n", mdfa->get_m_size());
 	printf("\n按任意键继续...");
 	getchar();
 	// ftime(&startTime);

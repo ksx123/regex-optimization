@@ -107,6 +107,14 @@ int RCDFA::match(FILE *file){
   return 0;
 }
 
+unsigned int RCDFA::get_m_size(){
+	unsigned int m_size = DFA::get_m_size();
+	for (state_t s=0;s<_size;s++){
+		list_re * re_list = range_edges_table[s];
+		m_size += sizeof(list_re) + re_list->size() *(16+ sizeof(RangeEdge*) + sizeof(RangeEdge)) + 24;
+	}
+	return m_size;
+}
 int RCDFA::match(char * str){
   int i = 0;
   state_t current = 0;

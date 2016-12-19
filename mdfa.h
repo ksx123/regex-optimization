@@ -24,6 +24,8 @@ public:
 	MDFA(dfa_list* dfas);
 	~MDFA();
 
+	unsigned int get_m_size();
+
 	void build();
 	void toRCDFA();
 
