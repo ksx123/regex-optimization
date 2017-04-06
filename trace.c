@@ -123,6 +123,65 @@ void trace::traverse(DFA *dfa, FILE *stream){
 	delete accepted_rules;
 }
 
+void trace::traverse(EgCmpDfa *ecdfa, FILE *stream){
+	if (tracefile==NULL) fatal("trace file is NULL!");
+	rewind(tracefile);
+	
+	if (VERBOSE) fprintf(stderr, "\n=>trace::traverse ECDFA on file %s\n...",tracename);
+	
+	// if (dfa->get_depth()==NULL) dfa->set_depth();
+	// unsigned int *dfa_depth=dfa->get_depth();
+	
+	state_t state=0;
+	int c=fgetc(tracefile);
+	long inputs=0;
+	
+	unsigned int *stats=allocate_uint_array(ecdfa->getSize());
+	for (int j=1;j<ecdfa->getSize();j++) stats[j]=0;
+	stats[0]=1;	
+	linked_set *accepted_rules=new linked_set();
+	
+	while(c!=EOF){
+		state=ecdfa->getNext(state, (unsigned char) c);
+		stats[state]++;
+		if (!ecdfa->accepts(state)->empty()){
+			accepted_rules->add(ecdfa->accepts(state));
+			if (DEBUG){
+				char *label=NULL;  
+				linked_set *acc=ecdfa->accepts(state);
+				while(acc!=NULL && !acc->empty()){
+					if (label==NULL){
+						label=(char *)malloc(100);
+						sprintf(label,"%d",acc->value());
+					}else{
+						char *tmp=(char *)malloc(5);
+						sprintf(tmp,",%d",acc->value());
+						label=strcat(label,tmp); 
+						free(tmp);
+					}
+					acc=acc->succ();
+				}
+				fprintf(stream,"\nrules: %s reached at character %ld \n",label,inputs);
+				free(label);
+			}
+		}
+		inputs++;
+		c=fgetc(tracefile);
+	}
+	fprintf(stream,"\ntraversal statistics:: [state #, # traversals, %%time]\n");
+	int num=0;
+	for (int j=0;j<ecdfa->getSize();j++){
+		if(stats[j]!=0){
+			fprintf(stream,"[%ld, %ld, %f %%]\n",j,stats[j],(float)stats[j]*100/inputs);
+			num++;
+		}
+	}
+	fprintf(stream,"%ld out of %ld states traversed (%f %%)\n",num,ecdfa->getSize(),(float)num*100/ecdfa->getSize());
+	fprintf(stream,"rules matched: %ld\n",accepted_rules->size());	
+	free(stats);		
+	delete accepted_rules;
+}
+
 void trace::traverse_compressed(DFA *dfa, FILE *stream){
 	if (tracefile==NULL) fatal("trace file is NULL!");
 	rewind(tracefile);

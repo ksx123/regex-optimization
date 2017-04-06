@@ -9,7 +9,7 @@ EgCmpDfaBitmapRange *get_bitmap_range_from_sample_ranges(list<EgCmpDfaSampleRang
 	bitmap_range->target = sample_ranges->front()->target;
 	BitmapInit(bitmap_range->bitmap, CHAR_BIRMAP_SIZE);
 	for (list<EgCmpDfaSampleRange*>::iterator it=sample_ranges->begin() ; it != sample_ranges->end(); ++it){
-		for (char i = (*it)->start; i <= (*it)->end; ++i) {
+		for (unsigned char i = (*it)->start; i <= (*it)->end; ++i) {
 			BitmapSet(bitmap_range->bitmap, CHAR_BIRMAP_SIZE, i);
 		}
 	}
@@ -44,7 +44,7 @@ EgCmpDfaRleRange *create_rle_range_list(list<EgCmpDfaSampleRange*> * sample_list
 	BitmapInit(rle->bitmap, CHAR_BIRMAP_SIZE);
 	int index = 0;
 	for (list<EgCmpDfaSampleRange*>::iterator it=sample_list->begin() ; it != sample_list->end(); ++it){
-		for (char i = (*it)->start; i <= (*it)->end; ++i) {
+		for (unsigned char i = (*it)->start; i <= (*it)->end; ++i) {
 			BitmapSet(rle->bitmap, CHAR_BIRMAP_SIZE, i);
 		}
 		rle->ranges[index].end = (*it)->end;
@@ -272,7 +272,7 @@ EgCmpDfa::~EgCmpDfa(){
 	free(this->edges);
 }
 
-state_t EgCmpDfa::getNext(state_t current, char input) {
+state_t EgCmpDfa::getNext(state_t current, unsigned char input) {
 	EgCmpDfaRleRangeItem* data1 = NULL;
 	EgCmpDfaHasBitEdage * data23 = NULL;
 	EgCmpDfaSampleRange* data4 = NULL;
@@ -350,7 +350,7 @@ linked_set* EgCmpDfa::match(FILE *file){
   rewind(file);
   linked_set *result = new linked_set();
   state_t current = 0;
-  char c = fgetc(file); 
+  unsigned char c = fgetc(file); 
   while(c!=EOF){
   	current = getNext(current, c);
 

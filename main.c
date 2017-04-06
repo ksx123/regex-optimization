@@ -45,6 +45,7 @@
 #include "stdinc.h"
 #include "nfa.h"
 #include "dfa.h"
+#include "ecdfa.h"
 #include "hybrid_fa.h"
 #include "parser.h"
 #include "trace.h"
@@ -254,6 +255,7 @@ int main(int argc, char **argv){
 	DFA *dfa=NULL;		// DFA
 	dfa_set *dfas=NULL; // set of DFAs, in case a single DFA for all RegEx in the set is not possible
 	HybridFA *hfa=NULL; // Hybrid-FA
+	EgCmpDfa *ecdaf=NULL;
 	
 	// if regex file is provided, parses it and instantiate the corresponding NFA.
 	// if feasible, convert the NFA to DFA
@@ -307,6 +309,11 @@ int main(int argc, char **argv){
 		printf("HFA:: head size=%d, tail size=%d, number of tails=%d, border size=%d\n",hfa->get_head()->size(),hfa->get_tail_size(),hfa->get_num_tails(),hfa->get_border()->size());
 	}
 
+	if (dfa!=NULL){
+		ecdaf=new EgCmpDfa(dfa);
+	}
+	
+
 	// trace file traversal
 	if (config.trace_file){
 		trace *tr=new trace(config.trace_file);
@@ -316,6 +323,7 @@ int main(int argc, char **argv){
 			if (dfa->get_default_tx()!=NULL) tr->traverse_compressed(dfa);
 		}		
 		if (hfa!=NULL) tr->traverse(hfa);
+		if (ecdaf !=NULL) tr->traverse(ecdaf);
 		delete tr;
 	}
 	 

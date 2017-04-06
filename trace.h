@@ -50,6 +50,7 @@
 
 #include "dfa.h"
 #include "nfa.h"
+#include "ecdfa.h"
 #include "hybrid_fa.h"
 #include "fa_memory.h"
 #include "dfas_memory.h"
@@ -100,6 +101,9 @@ public:
 	
 	/* traverses the given dfa and prints statistics to stream */ 
 	void traverse(DFA *dfa, FILE *stream=stdout);
+
+	/* traverses the given ecdfa and prints statistics to stream */ 
+	void traverse(EgCmpDfa *ecdfa, FILE *stream=stdout);
 	
 	/* traverses the given compressed dfa and prints statistics to stream */
 	void traverse_compressed(DFA *dfa, FILE *stream=stdout);

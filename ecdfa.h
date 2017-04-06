@@ -14,31 +14,31 @@ class EgCmpDfaEdage{
 public:
 	void *data;
 	unsigned lenght;
-	char type;
+	unsigned char type;
 };
 
 class EgCmpDfaSampleRange{
 public:
 	state_t target;
-	char start;
-	char end;
+	unsigned char start;
+	unsigned char end;
 };
 
 class EgCmpDfaBitmapRange{
 public:
 	state_t target;
-	char bitmap[CHAR_BIRMAP_SIZE];
+	unsigned char bitmap[CHAR_BIRMAP_SIZE];
 };
 
 class EgCmpDfaRleRangeItem{
 public:
 	state_t target;
-	char end;
+	unsigned char end;
 };
 
 class EgCmpDfaRleRange{
 public:
-	char bitmap[CHAR_BIRMAP_SIZE];
+	unsigned char bitmap[CHAR_BIRMAP_SIZE];
 	EgCmpDfaRleRangeItem * ranges;
 };
 
@@ -58,10 +58,16 @@ class EgCmpDfa
 	public:
 		EgCmpDfa(DFA* dfa);
 		~EgCmpDfa();
+		unsigned getSize();
+		linked_set *accepts(state_t state);
 		linked_set* match(FILE *file);
+		state_t getNext(state_t current, unsigned char input);
 	protected:
 		void forOneState(state_t s, state_t ** state_table);
-		state_t getNext(state_t current, char input);
 };
+
+inline unsigned EgCmpDfa::getSize(){ return this->size;}
+
+inline linked_set *EgCmpDfa::accepts(state_t state) { return accepted_rules[state]; }
 
 #endif /*__ECDFA_H*/
