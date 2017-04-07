@@ -8,8 +8,8 @@ using namespace std;
 
 class RangeEdge{
 public:
-	char start;
-	char end;
+	unsigned char start;
+	unsigned char end;
 	state_t target;
 };
 typedef list<RangeEdge*> list_re;

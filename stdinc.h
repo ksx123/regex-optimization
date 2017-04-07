@@ -65,6 +65,8 @@
 #define MAX_HEAD_SIZE 1000      // maximum number of states in the head automaton before starting to create tails
 //#define TAIL_DFAS 		    // do we want to build tail-DFA and to have at most one activation of each tail?
 
+#define CHAR_BIRMAP_SIZE 32 //BITMAP bit lenght
+
 /* DFA contruction */
 #define MAX_DFA_SIZE 4294967295 //max size of a DFA
 

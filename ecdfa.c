@@ -2,18 +2,24 @@
 #include "c_type.h"
 
 EgCmpDfaBitmapRange *get_bitmap_range_from_sample_ranges(list<EgCmpDfaSampleRange*> * sample_ranges){
+	// printf("start get_bitmap_range_from_sample_ranges\n");
 	EgCmpDfaBitmapRange *bitmap_range = new EgCmpDfaBitmapRange();
 	if(sample_ranges->empty()){
 		return NULL;
 	}
+	// printf("get_bitmap_range_from_sample_ranges 1\n");
 	bitmap_range->target = sample_ranges->front()->target;
+	// printf("get_bitmap_range_from_sample_ranges 2\n");
 	BitmapInit(bitmap_range->bitmap, CHAR_BIRMAP_SIZE);
+	// printf("get_bitmap_range_from_sample_ranges 3\n");
 	for (list<EgCmpDfaSampleRange*>::iterator it=sample_ranges->begin() ; it != sample_ranges->end(); ++it){
-		for (unsigned char i = (*it)->start; i <= (*it)->end; ++i) {
+		// printf("get_bitmap_range_from_sample_ranges 4\n");
+		for (unsigned int i = (*it)->start; i <= (*it)->end; ++i) {
+			// printf("get_bitmap_range_from_sample_ranges 5: %u %u %u\n",(*it)->start, (*it)->end, i);
 			BitmapSet(bitmap_range->bitmap, CHAR_BIRMAP_SIZE, i);
 		}
 	}
-
+	// printf("end get_bitmap_range_from_sample_ranges\n");
 	return bitmap_range;
 }
 
@@ -44,7 +50,7 @@ EgCmpDfaRleRange *create_rle_range_list(list<EgCmpDfaSampleRange*> * sample_list
 	BitmapInit(rle->bitmap, CHAR_BIRMAP_SIZE);
 	int index = 0;
 	for (list<EgCmpDfaSampleRange*>::iterator it=sample_list->begin() ; it != sample_list->end(); ++it){
-		for (unsigned char i = (*it)->start; i <= (*it)->end; ++i) {
+		for (unsigned int i = (*it)->start; i <= (*it)->end; ++i) {
 			BitmapSet(rle->bitmap, CHAR_BIRMAP_SIZE, i);
 		}
 		rle->ranges[index].end = (*it)->end;
@@ -126,7 +132,7 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 						same_target->push_back(r_edge);
 					}
 				}
-				if(same_target->size()>6){
+				if(same_target->size()>12){
 					bitmap_list->push_back(get_bitmap_range_from_sample_ranges(same_target));
 					//free megered sample range
 					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
@@ -270,6 +276,49 @@ EgCmpDfa::~EgCmpDfa(){
 		}
 	}
 	free(this->edges);
+}
+
+unsigned int EgCmpDfa::getMemSize(){
+	unsigned int sum = 0;
+	sum += sizeof(EgCmpDfaEdage) * this->size;
+	// printf("%d %d\n", sizeof(EgCmpDfaEdage), sizeof(state_t));
+	for(state_t s=0;s<this->size;++s){
+		EgCmpDfaRleRangeItem* data1 = NULL;
+		EgCmpDfaHasBitEdage * data23 = NULL;
+		EgCmpDfaSampleRange* data4 = NULL;
+		EgCmpDfaRleRange* data5 = NULL;
+		EgCmpDfaBitmapRange* data6 = NULL;
+		switch(this->edges[s].type){
+			case 1:
+				data1 = (EgCmpDfaRleRangeItem*)this->edges[s].data;
+				sum += sizeof(EgCmpDfaRleRangeItem);
+				break;
+			case 2:
+				data23 = (EgCmpDfaHasBitEdage*)this->edges[s].data;
+				sum += sizeof(EgCmpDfaHasBitEdage);
+				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
+				sum += sizeof(EgCmpDfaSampleRange) * data23->lenght;
+				break;
+			case 3:
+				data23 = (EgCmpDfaHasBitEdage*)this->edges[s].data;
+				sum += sizeof(EgCmpDfaHasBitEdage);
+				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
+				sum += sizeof(EgCmpDfaRleRange);
+				sum += sizeof(EgCmpDfaRleRangeItem) * data23->lenght;
+				break;
+			case 4:
+				sum += sizeof(EgCmpDfaSampleRange) * this->edges[s].lenght;
+				break;
+			case 5:
+				sum += sizeof(EgCmpDfaRleRange);
+				sum += sizeof(EgCmpDfaRleRangeItem) * this->edges[s].lenght;
+				break;
+			case 6:
+				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
+				break;
+		}
+	}
+	return sum;
 }
 
 state_t EgCmpDfa::getNext(state_t current, unsigned char input) {

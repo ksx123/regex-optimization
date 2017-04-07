@@ -4,8 +4,6 @@
 #include "dfa.h"
 #include <list>
 
-#define CHAR_BIRMAP_SIZE 32
-
 #pragma pack (1)
 
 using namespace std;
@@ -59,6 +57,7 @@ class EgCmpDfa
 		EgCmpDfa(DFA* dfa);
 		~EgCmpDfa();
 		unsigned getSize();
+		unsigned int getMemSize(); //B
 		linked_set *accepts(state_t state);
 		linked_set* match(FILE *file);
 		state_t getNext(state_t current, unsigned char input);
