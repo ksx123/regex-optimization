@@ -312,7 +312,6 @@ int main(int argc, char **argv){
 	if (dfa!=NULL){
 		ecdaf=new EgCmpDfa(dfa);
 	}
-	
 
 	// trace file traversal
 	if (config.trace_file){
