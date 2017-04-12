@@ -110,7 +110,7 @@ int RCDFA::match(FILE *file){
 unsigned int RCDFA::get_m_size(){
 	unsigned int m_size = DFA::get_m_size();
 	unsigned int range_sum = 0;
-	printf("#\tcount\tsingleCount\ttlenghtAvg\n");
+	if(DEBUG) printf("#\tcount\tsingleCount\ttlenghtAvg\n");
 	for (state_t s=0;s<_size;s++){
 		list_re * re_list = range_edges_table[s];
 		range_sum += re_list->size();
@@ -124,10 +124,10 @@ unsigned int RCDFA::get_m_size(){
 			}
 		}
 
-		printf("#%d\t%d\t%d\t%lf\n", s, re_list->size(), singleCount, 1.0*lenghtSum/re_list->size());
+		if(DEBUG) printf("#%d\t%d\t%d\t%lf\n", s, re_list->size(), singleCount, 1.0*lenghtSum/re_list->size());
 		m_size += sizeof(list_re) + re_list->size() *(16+ sizeof(RangeEdge*) + sizeof(RangeEdge)) + 24;
 	}
-	printf("sum:%d\n", range_sum);
+	if(DEBUG) printf("sum:%d\n", range_sum);
 	return m_size;
 }
 int RCDFA::match(char * str){
