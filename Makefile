@@ -44,8 +44,8 @@ main_new: stdinc.o int_set.o linked_set.o dheap.o subset.o partition.o wgraph.o 
 main_test2: stdinc.o linked_set.o partition.o wgraph.o dheap.o subset.o nfa.o dfa.o int_set.o parser.o c_type.o ecdfa.o rcdfa.o bitdfa.o rledfa.o orledfa.o main_test2.o
 	${CC} ${CFLAGS} stdinc.o linked_set.o partition.o wgraph.o dheap.o subset.o nfa.o dfa.o int_set.o parser.o c_type.o ecdfa.o rcdfa.o bitdfa.o rledfa.o orledfa.o main_test2.o -o regex_test2
 
-main_nmdfa: stdinc.o int_set.o linked_set.o subset.o dheap.o partition.o wgraph.o nfa.o dfa.o parser.o nmdfa.o main_nmdfa.o
-	${CC} ${CFLAGS} stdinc.o int_set.o linked_set.o subset.o dheap.o partition.o wgraph.o nfa.o dfa.o parser.o nmdfa.o main_nmdfa.o -o regex_nmdfa
+main_nmdfa: stdinc.o int_set.o linked_set.o subset.o dheap.o partition.o wgraph.o nfa.o dfa.o c_type.o ecdfa.o parser.o nmdfa.o main_nmdfa.o
+	${CC} ${CFLAGS} stdinc.o int_set.o linked_set.o subset.o dheap.o partition.o wgraph.o nfa.o dfa.o c_type.o ecdfa.o parser.o nmdfa.o main_nmdfa.o -o regex_nmdfa
 
 exe:
 	-chmod a+x regex*

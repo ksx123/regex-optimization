@@ -1,7 +1,7 @@
 #include "mdfa.h"
 #include "rcdfa.h"
 
-#define _MAX_SIZE 200
+#define _MAX_SIZE 100
 
 
 MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
@@ -67,8 +67,10 @@ unsigned int MDFA::get_m_size(){
 
 void MDFA::build() {
 	dfas = new dfa_list();
+	unsigned int index = 0;
 	for(list<dfa_nfa_list*>::iterator it=dfa_groups->begin(); it!=dfa_groups->end(); ++it){
 		dfa_nfa_list* ds = (*it);
+		printf("#group%d: %d\n", index++, ds->size());
 		NFA * new_fa = NULL;
 		for(dfa_nfa_list::iterator iit=ds->begin(); iit!=ds->end(); ++iit){
 			if(new_fa == NULL){

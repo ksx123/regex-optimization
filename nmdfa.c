@@ -1,6 +1,7 @@
 #include "nmdfa.h"
 #include "nfa.h"
 #include "dfa.h"
+#include "ecdfa.h"
 #include "parser.h"
 
 int **buildRulesMatrix(FILE *regex_file, regex_parser * parse, unsigned int size){
@@ -140,14 +141,14 @@ bool checkCanAdd(FILE *regex_file, regex_parser * parse, NMDfaGroup * curret_gro
 	}
 	else {
 		dfa->minimize();
-		canAdd = dfa->size() < 200;
+		canAdd = dfa->size() < GROUP_LIMIT;
 		delete dfa;
 	}
 	delete nfa;
 	return canAdd;
 }
 
-NMDFA::NMDFA(FILE *file, regex_parser *parse, unsigned char cpu_num){
+NMDFA::NMDFA(FILE *file, regex_parser *parse, unsigned char cpu_num, unsigned char type){
 	unsigned int rule_size = getRuleSizeFromFile(file);
 	int ** rulesMat = buildRulesMatrix(file, parse, rule_size);
 
@@ -205,7 +206,11 @@ NMDFA::NMDFA(FILE *file, regex_parser *parse, unsigned char cpu_num){
 		delete[] groups;
 	}
 
-	buildDfaList(group_list, file, parse);
+	if(type==1){
+		buildDfaList(group_list, file, parse);
+	}else if(type==2){
+		buildEcDfaList(group_list, file, parse);
+	}
 }
 
 void NMDFA::buildDfaList(list<int_set*>* group_list, FILE *regex_file, regex_parser *parse){
@@ -233,6 +238,31 @@ void NMDFA::buildDfaList(list<int_set*>* group_list, FILE *regex_file, regex_par
 }
 
 
+void NMDFA::buildEcDfaList(list<int_set*>* group_list, FILE *regex_file, regex_parser *parse){
+	EgCmpDfa** dfa_list = new EgCmpDfa*[group_list->size()];
+	int i = 0;
+	for(list<int_set*>::iterator it=group_list->begin(); it != group_list->end(); ++it) {
+		(*it)->print();
+		NFA *nfa = parse->parse_from_list(regex_file, *it);
+		nfa->remove_epsilon();
+		nfa->reduce();
+		DFA *dfa=nfa->nfa2dfa();
+		if (dfa==NULL) {
+			printf("Max DFA size %ld exceeded during creation: the DFA was not generated\n",MAX_DFA_SIZE);
+		}
+		else {
+			dfa->minimize();
+			dfa_list[i] = new EgCmpDfa(dfa);
+			delete dfa;
+		}
+		i++;
+		delete nfa;
+	}
+	this->type = 2;
+	this->group_size = group_list->size();
+	this->data = dfa_list;
+}
+
 NMDFA::~NMDFA(){
 
 }
@@ -243,6 +273,11 @@ unsigned int NMDFA::getSize() {
 		DFA **dfas = (DFA **)this->data;
 		for (int i = 0; i < this->group_size; ++i) {
 			sum += dfas[i]->size();
+		}
+	}else if(this->type==2){
+		EgCmpDfa **dfas = (EgCmpDfa **)this->data;
+		for (int i = 0; i < this->group_size; ++i) {
+			sum += dfas[i]->getSize();
 		}
 	}
 	
@@ -256,7 +291,11 @@ unsigned int NMDFA::getMemSize(){
 		for (int i = 0; i < this->group_size; ++i) {
 			sum += dfas[i]->get_m_size();
 		}
+	}else if(this->type==2){
+		EgCmpDfa **dfas = (EgCmpDfa **)this->data;
+		for (int i = 0; i < this->group_size; ++i) {
+			sum += dfas[i]->getMemSize();
+		}
 	}
-	
 	return sum;
 }

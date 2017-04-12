@@ -9,6 +9,7 @@
 
 int VERBOSE;
 int DEBUG;
+int GROUP_LIMIT = 100;
 
 /*
  * Returns the current version string
@@ -47,6 +48,9 @@ static struct conf {
 	bool m_mod;
 	bool verbose;
 	bool debug;
+    int group_limit;
+    int cpu_num;
+    bool use_ecdfa;
 } config;
 
 
@@ -57,7 +61,9 @@ void init_conf(){
 	config.i_mod=false;
 	config.m_mod=false;
 	config.debug=false;
-	config.verbose=false;
+	config.group_limit=0;
+    config.cpu_num=4;
+    config.use_ecdfa=false;
 }
 
 /* print the configuration */
@@ -69,6 +75,9 @@ void print_conf(){
 	if (config.m_mod) fprintf(stderr,"- m modifier selected\n");
 	if (config.verbose && !config.debug) fprintf(stderr,"- verbose mode\n");
 	if (config.debug) fprintf(stderr,"- debug mode\n");
+    if (config.group_limit) fprintf(stderr, "- Group limit: %d\n",config.group_limit);
+    if (config.cpu_num) fprintf(stderr,"- Cpu number(default:4): %d\n",config.cpu_num);
+    if (config.use_ecdfa) fprintf(stderr,"- use ecdfa\n");
 }
 
 /* parse the main call parameters */
@@ -103,11 +112,27 @@ static int parse_arguments(int argc, char **argv)
     			fprintf(stderr,"Trace file name missing.\n");
     			return 0;
     		}
-    		config.trace_file=argv[i];		
+    		config.trace_file=argv[i];
+        }else if(strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--cpu") == 0){
+            i++;
+            if(i==argc){
+                fprintf(stderr,"Cpu number value missing.\n");
+                return 0;
+            }
+            config.cpu_num=atoi(argv[i]);		
+        }else if(strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--limit") == 0){
+            i++;
+            if(i==argc){
+                fprintf(stderr,"Group limit value missing.\n");
+                return 0;
+            }
+            config.group_limit=atoi(argv[i]);  
     	}else if(strcmp(argv[i], "--m") == 0){
 			config.m_mod=true;
 		}else if(strcmp(argv[i], "--i") == 0){
-			config.i_mod=true;	    		
+			config.i_mod=true;
+        }else if(strcmp(argv[i], "--e") == 0){
+            config.use_ecdfa=true;  	    		
     	}else{
     		fprintf(stderr,"Ignoring invalid option %s\n",argv[i]);
     	}
@@ -127,10 +152,14 @@ int main(int argc, char **argv){
 		VERBOSE=1;
 	} 
 
+    if(config.group_limit!=0){
+        GROUP_LIMIT = config.group_limit;
+    }
+
 	if(config.regex_file!=NULL){
 		regex_parser *parse=new regex_parser(config.i_mod,config.m_mod);
 		FILE *re_file=fopen(config.regex_file,"r");
-		NMDFA* nmdfa = new NMDFA(re_file, parse, 4);
+		NMDFA* nmdfa = new NMDFA(re_file, parse, config.cpu_num, config.use_ecdfa? 2: 1);
 		fclose(re_file);
 		printf("nmdfa: gSize=%d, size=%d, memSize=%d\n", nmdfa->getGroupSize(), nmdfa->getSize(), nmdfa->getMemSize());
 	}

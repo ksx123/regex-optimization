@@ -177,10 +177,11 @@ void doMDFA(char const * re_file_name){
 		state_size += get_dfa_count(dfa, &tmp_e);;
 		edge_count += tmp_e;
 	}
-
 	printf("MDFA state size:%d, edge count:%d\n", state_size, edge_count);
-	delete nfas;
-	delete dfas;
+	printf("MDFA gSize:%d, m_siz:%lu\n", ds->size(), mdfa->get_m_size());
+
+	free(nfas);
+	free(dfas);
 	fclose(regex_file);
 	delete p;
 	ftime(&endTime);
@@ -299,8 +300,7 @@ int main(int argc, char const *argv[])
 			printf("%s\n", "UK type");
 		}
 	}
-	printf("\nEnd\n");
-	getchar();
+	// printf("\nEnd\n");
 	return 0;
 }
 
