@@ -371,6 +371,8 @@ EgCmpDfa::~EgCmpDfa(){
 }
 
 unsigned int EgCmpDfa::getMemSize(){
+
+	unsigned long long count1 = 0, count2 = 0, count3 = 0, count4 = 0, count5 = 0, count6 = 0;
 	unsigned int sum = 0;
 	sum += sizeof(EgCmpDfaEdage) * this->size;
 	// printf("%d %d\n", sizeof(EgCmpDfaEdage), sizeof(state_t));
@@ -382,19 +384,19 @@ unsigned int EgCmpDfa::getMemSize(){
 		EgCmpDfaBitmapRange* data6 = NULL;
 		switch(this->edges[s].type){
 			case 1:
-				// printf("1\n");
+				count1++;
 				data1 = (EgCmpDfaRleRangeItem*)this->edges[s].data;
 				sum += sizeof(EgCmpDfaRleRangeItem);
 				break;
 			case 2:
-				// printf("2\n");
+				count2++;
 				data23 = (EgCmpDfaHasBitEdage*)this->edges[s].data;
 				sum += sizeof(EgCmpDfaHasBitEdage);
 				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
 				sum += sizeof(EgCmpDfaSampleRange) * data23->lenght;
 				break;
 			case 3:
-				// printf("3\n");
+				count3++;
 				data23 = (EgCmpDfaHasBitEdage*)this->edges[s].data;
 				sum += sizeof(EgCmpDfaHasBitEdage);
 				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
@@ -402,16 +404,16 @@ unsigned int EgCmpDfa::getMemSize(){
 				sum += sizeof(EgCmpDfaRleRangeItem) * data23->lenght;
 				break;
 			case 4:
-				// printf("4\n");
+				count4++;
 				sum += sizeof(EgCmpDfaSampleRange) * this->edges[s].lenght;
 				break;
 			case 5:
-				// printf("5\n");
+				count5++;
 				sum += sizeof(EgCmpDfaRleRange);
 				sum += sizeof(EgCmpDfaRleRangeItem) * this->edges[s].lenght;
 				break;
 			case 6:
-				// printf("6\n");
+				count6++;
 				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
 				break;
 			case 7:
@@ -427,6 +429,8 @@ unsigned int EgCmpDfa::getMemSize(){
 				break;
 		}
 	}
+
+	printf("single:%d, bitmap+range:%d, bitmap+rle:%d, range:%d, rle:%d, bitmap:%d\n", count1, count2, count3, count4, count5, count6);
 	return sum;
 }
 
