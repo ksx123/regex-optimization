@@ -68,6 +68,17 @@ RCDFA::RCDFA(DFA* dfa) : DFA(dfa->size()){
 		}
 	}
 	free(mark);
+
+	this->range_edges_lists = (RangeEdgeList*)allocate_array(_size, sizeof(RangeEdgeList));
+	for (state_t s=0;s<_size;s++){
+		list_re * re_list = range_edges_table[s];
+		this->range_edges_lists[s].lenght = re_list->size();
+		this->range_edges_lists[s].ranges = (RangeEdge*)allocate_array(re_list->size(), sizeof(RangeEdge));
+		unsigned int index = 0;
+		for(list_re::iterator it= re_list->begin();it!=re_list->end();++it){
+			this->range_edges_lists[s].ranges[index++] = **it;
+		}
+	}
 }
 
 RCDFA::~RCDFA() {
@@ -130,6 +141,18 @@ unsigned int RCDFA::get_m_size(){
 	if(DEBUG) printf("sum:%d\n", range_sum);
 	return m_size;
 }
+
+unsigned int RCDFA::getMemSize() {
+	unsigned int sum = 0;
+	// printf("%d %d\n", sizeof(RangeEdgeList), sizeof(RangeEdge));
+	sum = _size * sizeof(RangeEdgeList);
+	for (state_t s=0; s<_size; s++){
+		RangeEdgeList re_list = range_edges_lists[s];
+		sum += re_list.lenght* sizeof(RangeEdge);
+	}
+	return sum;
+}
+
 int RCDFA::match(char * str){
   int i = 0;
   state_t current = 0;

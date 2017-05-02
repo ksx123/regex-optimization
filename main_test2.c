@@ -144,7 +144,7 @@ int main(int argc, char **argv){
 			printf("DFA #%d::  size=%ld, memSize=%d\n",idx,(*it)->size(), (*it)->size()*1024);
 
 			RCDFA *rcdfa = new RCDFA(*it);
-			printf("rcdfa #%d: size=%u, memSize=%u\n", idx, rcdfa->size(), rcdfa->get_m_size());
+			printf("rcdfa #%d: size=%u, memSize=%u, newMemSize=%u\n", idx, rcdfa->size(), rcdfa->get_m_size(), rcdfa->getMemSize());
 			delete rcdfa;
 
 			BitCmpDfa *bitdfa = new BitCmpDfa(*it);
