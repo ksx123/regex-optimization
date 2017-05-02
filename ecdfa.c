@@ -153,6 +153,7 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 	}
 
 	list<EgCmpDfaSampleRange*> * re_list = new list<EgCmpDfaSampleRange*>();
+	list<EgCmpDfaSampleRange*> * re_list2 = new list<EgCmpDfaSampleRange*>();
 	list<EgCmpDfaBitmapRange*> * bitmap_list = new list<EgCmpDfaBitmapRange*>();
 	list<EgCmpDfaSampleRange*> * same_target = new list<EgCmpDfaSampleRange*>();
 	EgCmpDfaSampleRange* r_edge = NULL;
@@ -196,19 +197,18 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 					re_list->push_back(*it);
 				}
 
-// 				if(same_target->size()>12){
-// 					bitmap_list->push_back(get_bitmap_range_from_sample_ranges(same_target));
-// 					//free megered sample range
-// 					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
-// 						printf("%d %d %d, ", (*it)->start, (*it)->end, (*it)->target);
-// 						delete *it;
-// 					}
-// printf("\n");
-// 				}else{
-// 					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
-// 						re_list->push_back(*it);
-// 					}
-// 				}
+				if(same_target->size()>12){
+					bitmap_list->push_back(get_bitmap_range_from_sample_ranges(same_target));
+					//free megered sample range
+					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
+						printf("%d %d %d, ", (*it)->start, (*it)->end, (*it)->target);
+					}
+					printf("\n");
+				}else{
+					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
+						re_list2->push_back(*it);
+					}
+				}
 			}
 		}
 	}
@@ -229,24 +229,27 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 		EgCmpDfaRleRange *rle_range_list = NULL;
 		EgCmpDfaORleRangeItem *orle_range_list = NULL;
 		unsigned char orle_lenght=0;
-		if(!bitmap_list->empty()){
-			bit_range_list = create_bit_range_list(bitmap_list);
-		}
 
 		if(!re_list->empty()){
 			re_list->sort(CompareRanges);
 			// count 0 range
 			unsigned char zero_count =  get_zero_count(re_list);
-			if(zero_count==0 || 1.0*re_size/zero_count>5){
-				printf("%f\n", zero_count==0?0:1.0*re_size/zero_count);
+			if(zero_count==0 || 1.0 * re_size / zero_count>5){
+				// printf("%f\n", zero_count==0 ? 0 : 1.0 * re_size/zero_count);
 				orle_range_list = create_orle_range_list(re_list, &orle_lenght);
 			}else{
 				// printf("1111111111\n");
-				//TODO bitmap build
-				if(re_list->size()>CHAR_BIRMAP_SIZE){
-					rle_range_list = create_rle_range_list(re_list);
-				}else{
-					sam_range_list = create_sam_range_list(re_list);
+				if(!bitmap_list->empty()){
+					bit_range_list = create_bit_range_list(bitmap_list);
+				}
+				if(!re_list2->empty()){
+					re_list2->sort(CompareRanges);
+
+					if(re_list2->size()>CHAR_BIRMAP_SIZE){
+						rle_range_list = create_rle_range_list(re_list2);
+					}else{
+						sam_range_list = create_sam_range_list(re_list2);
+					}
 				}
 			}
 		}
@@ -372,7 +375,7 @@ EgCmpDfa::~EgCmpDfa(){
 
 unsigned int EgCmpDfa::getMemSize(){
 
-	unsigned long long count1 = 0, count2 = 0, count3 = 0, count4 = 0, count5 = 0, count6 = 0;
+	unsigned long long count1 = 0, count2 = 0, count3 = 0, count4 = 0, count5 = 0, count6 = 0, count7 = 0, count8 = 0;
 	unsigned int sum = 0;
 	sum += sizeof(EgCmpDfaEdage) * this->size;
 	// printf("%d %d\n", sizeof(EgCmpDfaEdage), sizeof(state_t));
@@ -417,20 +420,20 @@ unsigned int EgCmpDfa::getMemSize(){
 				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
 				break;
 			case 7:
-				// printf("7\n");
+				count7++;
 				data23 = (EgCmpDfaHasBitEdage*)this->edges[s].data;
 				sum += sizeof(EgCmpDfaHasBitEdage);
 				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
 				sum += sizeof(EgCmpDfaORleRangeItem) * data23->lenght;
 				break;
 			case 8:
-				// printf("8\n");
+				count8++;
 				sum += sizeof(EgCmpDfaORleRangeItem) * this->edges[s].lenght;
 				break;
 		}
 	}
 
-	printf("single:%d, bitmap+range:%d, bitmap+rle:%d, range:%d, rle:%d, bitmap:%d\n", count1, count2, count3, count4, count5, count6);
+	printf("single:%d, bitmap+range:%d, bitmap+rle:%d, range:%d, rle:%d, bitmap:%d, bitmap+orle:%d, orle:%d\n", count1, count2, count3, count4, count5, count6, count7, count8);
 	return sum;
 }
 
