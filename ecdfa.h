@@ -11,7 +11,7 @@ using namespace std;
 class EgCmpDfaEdage{
 public:
 	void *data;
-	unsigned lenght;
+	unsigned char lenght;
 	unsigned char type;
 };
 
@@ -40,10 +40,22 @@ public:
 	EgCmpDfaRleRangeItem * ranges;
 };
 
+class EgCmpDfaORleRangeItem{
+public:
+	state_t target;
+	unsigned char lenght;
+};
+
+class EgCmpDfaORleRange{
+public:
+	EgCmpDfaORleRangeItem * ranges;
+	unsigned char lenght;
+};
+
 class EgCmpDfaHasBitEdage{
 public:
 	EgCmpDfaBitmapRange * bit_ranges;
-	unsigned lenght;
+	unsigned char lenght;
 	void *other_ranges;
 };
 

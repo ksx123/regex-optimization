@@ -1,5 +1,65 @@
 #include "ecdfa.h"
 #include "c_type.h"
+EgCmpDfaORleRangeItem* create_orle_range_list(list<EgCmpDfaSampleRange*>* sample_list, unsigned char *orle_size){
+	list<EgCmpDfaORleRangeItem*>* rle_list = new list<EgCmpDfaORleRangeItem*>();
+	unsigned char lastEnd = 0;
+	bool isFirst = true;
+	for (list<EgCmpDfaSampleRange*>::iterator it=sample_list->begin() ; it != sample_list->end(); ++it){
+		if(isFirst && (*it)->start > 0){
+			// printf("push_back: %d,%d\n", (*it)->start, isFirst);
+			EgCmpDfaORleRangeItem* tmpRangeItem = new EgCmpDfaORleRangeItem();
+			tmpRangeItem->target = 0;
+			tmpRangeItem->lenght = (*it)->start;
+			rle_list->push_back(tmpRangeItem);
+		}else if((*it)->start - lastEnd > 1){
+			EgCmpDfaORleRangeItem* tmpRangeItem = new EgCmpDfaORleRangeItem();
+			tmpRangeItem->target = 0;
+			tmpRangeItem->lenght = (*it)->start - lastEnd - 2;
+			// printf("push_back: %d-%d\n", (*it)->start, lastEnd);
+			rle_list->push_back(tmpRangeItem);
+		}
+		isFirst = false;
+
+		// printf("s:%d, e:%d, t:%d\n", (*it)->start, (*it)->end, (*it)->target);
+
+		unsigned char lenght = (*it)->end - (*it)->start; // need +1, 0 is 1, 255 is 256
+		EgCmpDfaORleRangeItem* tmpRangeItem = new EgCmpDfaORleRangeItem();
+		tmpRangeItem->target = (*it)->target;
+		tmpRangeItem->lenght = lenght;
+		rle_list->push_back(tmpRangeItem);
+		lastEnd = (*it)->end;
+	}
+	// printf("sample_list=%d, rle_list=%d\n", sample_list->size(),  rle_list->size());
+
+	*orle_size = rle_list->size();
+	EgCmpDfaORleRangeItem* ranges = new EgCmpDfaORleRangeItem[rle_list->size()];
+
+	int index = 0;
+	for (list<EgCmpDfaORleRangeItem*>::iterator iit=rle_list->begin() ; iit != rle_list->end(); ++iit){
+		ranges[index] = *(*iit);
+		delete *iit;
+		index++;
+	}
+	delete rle_list;
+
+	return ranges;
+}
+
+unsigned char get_zero_count(list<EgCmpDfaSampleRange*>* sample_list){
+	unsigned char count = 0;
+	unsigned char lastEnd = 0;
+	bool isFirst = true;
+	for (list<EgCmpDfaSampleRange*>::iterator it=sample_list->begin() ; it != sample_list->end(); ++it){
+		if(isFirst && (*it)->start > 0){
+			count++;
+		}else if((*it)->start - lastEnd > 1){
+			count++;
+		}
+		isFirst = false;
+		lastEnd = (*it)->end;
+	}
+	return count;
+}
 
 EgCmpDfaBitmapRange *get_bitmap_range_from_sample_ranges(list<EgCmpDfaSampleRange*> * sample_ranges){
 	// printf("start get_bitmap_range_from_sample_ranges\n");
@@ -132,17 +192,23 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 						same_target->push_back(r_edge);
 					}
 				}
-				if(same_target->size()>12){
-					bitmap_list->push_back(get_bitmap_range_from_sample_ranges(same_target));
-					//free megered sample range
-					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
-						delete *it;
-					}
-				}else{
-					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
-						re_list->push_back(*it);
-					}
+				for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
+					re_list->push_back(*it);
 				}
+
+// 				if(same_target->size()>12){
+// 					bitmap_list->push_back(get_bitmap_range_from_sample_ranges(same_target));
+// 					//free megered sample range
+// 					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
+// 						printf("%d %d %d, ", (*it)->start, (*it)->end, (*it)->target);
+// 						delete *it;
+// 					}
+// printf("\n");
+// 				}else{
+// 					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
+// 						re_list->push_back(*it);
+// 					}
+// 				}
 			}
 		}
 	}
@@ -160,18 +226,28 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 
 		EgCmpDfaBitmapRange *bit_range_list = NULL;
 		EgCmpDfaSampleRange *sam_range_list = NULL;
-		EgCmpDfaRleRange * rle_range_list = NULL;
+		EgCmpDfaRleRange *rle_range_list = NULL;
+		EgCmpDfaORleRangeItem *orle_range_list = NULL;
+		unsigned char orle_lenght=0;
 		if(!bitmap_list->empty()){
 			bit_range_list = create_bit_range_list(bitmap_list);
 		}
 
 		if(!re_list->empty()){
-			// TODO sort re_list
 			re_list->sort(CompareRanges);
-			if(re_list->size()>CHAR_BIRMAP_SIZE){
-				rle_range_list = create_rle_range_list(re_list);
+			// count 0 range
+			unsigned char zero_count =  get_zero_count(re_list);
+			if(zero_count==0 || 1.0*re_size/zero_count>5){
+				printf("%f\n", zero_count==0?0:1.0*re_size/zero_count);
+				orle_range_list = create_orle_range_list(re_list, &orle_lenght);
 			}else{
-				sam_range_list = create_sam_range_list(re_list);
+				// printf("1111111111\n");
+				//TODO bitmap build
+				if(re_list->size()>CHAR_BIRMAP_SIZE){
+					rle_range_list = create_rle_range_list(re_list);
+				}else{
+					sam_range_list = create_sam_range_list(re_list);
+				}
 			}
 		}
 
@@ -195,6 +271,16 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 			this->edges[s].data = data;
 		}
 
+		if(bit_range_list!=NULL && orle_range_list!=NULL){
+			this->edges[s].type = 7;
+			this->edges[s].lenght = bit_size;
+			EgCmpDfaHasBitEdage * data = new EgCmpDfaHasBitEdage();
+			data->bit_ranges = bit_range_list;
+			data->lenght = orle_lenght;
+			data->other_ranges = orle_range_list;
+			this->edges[s].data = data;
+		}
+
 		if(bit_range_list==NULL && sam_range_list!=NULL){
 			this->edges[s].type = 4;
 			this->edges[s].lenght = re_size;
@@ -207,7 +293,13 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 			this->edges[s].data = rle_range_list;
 		}
 
-		if(bit_range_list!=NULL && sam_range_list==NULL && rle_range_list==NULL){
+		if(bit_range_list==NULL && orle_range_list!=NULL){
+			this->edges[s].type = 8;
+			this->edges[s].lenght = orle_lenght;
+			this->edges[s].data = orle_range_list;
+		}
+
+		if(bit_range_list!=NULL && sam_range_list==NULL && rle_range_list==NULL && orle_range_list==NULL){
 			this->edges[s].type = 6;
 			this->edges[s].lenght = bit_size;
 			this->edges[s].data = bit_range_list;
@@ -290,16 +382,19 @@ unsigned int EgCmpDfa::getMemSize(){
 		EgCmpDfaBitmapRange* data6 = NULL;
 		switch(this->edges[s].type){
 			case 1:
+				// printf("1\n");
 				data1 = (EgCmpDfaRleRangeItem*)this->edges[s].data;
 				sum += sizeof(EgCmpDfaRleRangeItem);
 				break;
 			case 2:
+				// printf("2\n");
 				data23 = (EgCmpDfaHasBitEdage*)this->edges[s].data;
 				sum += sizeof(EgCmpDfaHasBitEdage);
 				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
 				sum += sizeof(EgCmpDfaSampleRange) * data23->lenght;
 				break;
 			case 3:
+				// printf("3\n");
 				data23 = (EgCmpDfaHasBitEdage*)this->edges[s].data;
 				sum += sizeof(EgCmpDfaHasBitEdage);
 				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
@@ -307,14 +402,28 @@ unsigned int EgCmpDfa::getMemSize(){
 				sum += sizeof(EgCmpDfaRleRangeItem) * data23->lenght;
 				break;
 			case 4:
+				// printf("4\n");
 				sum += sizeof(EgCmpDfaSampleRange) * this->edges[s].lenght;
 				break;
 			case 5:
+				// printf("5\n");
 				sum += sizeof(EgCmpDfaRleRange);
 				sum += sizeof(EgCmpDfaRleRangeItem) * this->edges[s].lenght;
 				break;
 			case 6:
+				// printf("6\n");
 				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
+				break;
+			case 7:
+				// printf("7\n");
+				data23 = (EgCmpDfaHasBitEdage*)this->edges[s].data;
+				sum += sizeof(EgCmpDfaHasBitEdage);
+				sum += sizeof(EgCmpDfaBitmapRange) * this->edges[s].lenght;
+				sum += sizeof(EgCmpDfaORleRangeItem) * data23->lenght;
+				break;
+			case 8:
+				// printf("8\n");
+				sum += sizeof(EgCmpDfaORleRangeItem) * this->edges[s].lenght;
 				break;
 		}
 	}
