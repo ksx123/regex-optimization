@@ -47,5 +47,9 @@ main_test2: stdinc.o linked_set.o partition.o wgraph.o dheap.o subset.o nfa.o df
 main_nmdfa: stdinc.o int_set.o linked_set.o subset.o dheap.o partition.o wgraph.o nfa.o dfa.o c_type.o ecdfa.o parser.o nmdfa.o main_nmdfa.o
 	${CC} ${CFLAGS} stdinc.o int_set.o linked_set.o subset.o dheap.o partition.o wgraph.o nfa.o dfa.o c_type.o ecdfa.o parser.o nmdfa.o main_nmdfa.o -o regex_nmdfa
 
+main_becchi: stdinc.o int_set.o linked_set.o subset.o dheap.o partition.o wgraph.o nfa.o dfa.o c_type.o ecdfa.o parser.o becchi.o main_becchi.o
+	${CC} ${CFLAGS} stdinc.o int_set.o linked_set.o subset.o dheap.o partition.o wgraph.o nfa.o dfa.o c_type.o ecdfa.o parser.o becchi.o main_becchi.o -o regex_becchi
+
+
 exe:
 	-chmod a+x regex*
