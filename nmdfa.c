@@ -112,8 +112,8 @@ NMDfaGroup* get_init_groups(int **rulesMat, unsigned int rule_size, int_set* pro
 int get_next_rule(int ** rulesMat, unsigned int rule_size, int_set* processed_set, int_set* curret_group){
 	int min = -1;
 	int min_index = -1;
-	processed_set->print();
-	curret_group->print();
+	// processed_set->print();
+	// curret_group->print();
 	for (unsigned int i = 0; i < rule_size; ++i){
 		if(!processed_set->mbr(i)){
 			int sum = 0;
@@ -166,7 +166,7 @@ NMDFA::NMDFA(FILE *file, regex_parser *parse, unsigned char cpu_num, unsigned ch
 		for(int groups_index = 0; groups_index < curret_group_size; groups_index++){
 			if(!groups[groups_index].isFull){
 				int next_rule = get_next_rule(rulesMat, rule_size, processed_set, groups[groups_index].data);
-				fprintf(stderr, "next_rule %d ,", next_rule);
+				// fprintf(stderr, "next_rule %d ,", next_rule);
 				// groups[groups_index].data->print();
 				if(checkCanAdd(file, parse, &groups[groups_index], next_rule+1)){
 					groups[groups_index].data->insert(next_rule+1);
