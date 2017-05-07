@@ -130,7 +130,8 @@ int get_next_rule(int ** rulesMat, unsigned int rule_size, int_set* processed_se
 	return min_index;
 }
 
-bool checkCanAdd(FILE *regex_file, regex_parser * parse, NMDfaGroup * curret_group){
+bool checkCanAdd(FILE *regex_file, regex_parser * parse, NMDfaGroup * curret_group, int next_rule){
+	curret_group->data->insert(next_rule);
 	NFA *nfa = parse->parse_from_list(regex_file, curret_group->data);
 	nfa->remove_epsilon();
 	nfa->reduce();
@@ -145,6 +146,7 @@ bool checkCanAdd(FILE *regex_file, regex_parser * parse, NMDfaGroup * curret_gro
 		delete dfa;
 	}
 	delete nfa;
+	curret_group->data->remove(next_rule);
 	return canAdd;
 }
 
@@ -163,7 +165,7 @@ NMDFA::NMDFA(FILE *file, regex_parser *parse, unsigned char cpu_num, unsigned ch
 		for(int groups_index = 0; groups_index < curret_group_size; groups_index++){
 			if(!groups[groups_index].isFull){
 				int next_rule = get_next_rule(rulesMat, rule_size, processed_set, groups[groups_index].data);
-				if(checkCanAdd(file, parse, &groups[groups_index])){
+				if(checkCanAdd(file, parse, &groups[groups_index], next_rule)){
 					groups[groups_index].data->insert(next_rule+1);
 					processed_set->insert(next_rule);
 				}else{
