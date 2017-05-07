@@ -165,7 +165,7 @@ NMDFA::NMDFA(FILE *file, regex_parser *parse, unsigned char cpu_num, unsigned ch
 		for(int groups_index = 0; groups_index < curret_group_size; groups_index++){
 			if(!groups[groups_index].isFull){
 				int next_rule = get_next_rule(rulesMat, rule_size, processed_set, groups[groups_index].data);
-				if(checkCanAdd(file, parse, &groups[groups_index], next_rule)){
+				if(checkCanAdd(file, parse, &groups[groups_index], next_rule+1)){
 					groups[groups_index].data->insert(next_rule+1);
 					processed_set->insert(next_rule);
 				}else{
