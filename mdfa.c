@@ -1,17 +1,25 @@
 #include "mdfa.h"
 #include "rcdfa.h"
 
-#define _MAX_SIZE 100
+#define _MAX_SIZE 300
 
 
 MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
 	unsigned int g[size][size];
 	unsigned int V[size];
 	for (int i = 0; i < size; ++i){
+		g[i][i] = 0;
 		for (int j = i + 1; j < size; ++j){
 			g[i][j] = is_interaction(nfas[i], nfas[j], dfas[i]->size(), dfas[j]->size());
+			g[j][i] = g[i][j];
 		}
 	}
+	// for (int i = 0; i < size; ++i){
+	// 	for (int j = 0; j < size; ++j){
+	// 		printf("%d ", g[i][j]);
+	// 	}
+	// 	printf("\n");
+	// }
 	for(int i=0;i<size;++i) V[i] = 1;
 	
 	dfa_groups = new list<dfa_nfa_list*>();
@@ -19,8 +27,14 @@ MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
 		dfa_nfa_list* dnl = new dfa_nfa_list();
 		unsigned int in_set[size];
 		for(int i=0;i<size;++i) in_set[i] = 0;
+		int isFirst = 1;
 		while(!is_limited(dnl) && has_items(V, size)){
 			int dfa_index = get_next_dfa(in_set, V, (unsigned int*)g, size);
+			if(isFirst){
+			   dfa_index = get_init_dfa(V, (unsigned int*)g, size);
+			   isFirst = 0;
+			}
+			// printf("dfa_index:%d\n", dfa_index);
 			V[dfa_index] = 0;
 			in_set[dfa_index] = 1;
 			dfa_nfa *p = new dfa_nfa();
@@ -28,6 +42,7 @@ MDFA::MDFA(dfa_array dfas, nfa_array nfas, int size){
 			p->second = nfas[dfa_index];
 			dnl->push_back(p);
 		}
+		// printf("-----------------------------\n");
 		dfa_groups->push_back(dnl);
 	}
 	this->dfas = NULL;
@@ -66,6 +81,7 @@ unsigned int MDFA::get_m_size(){
 }
 
 void MDFA::build() {
+	printf("_MAX_SIZE:%d\n", _MAX_SIZE);
 	dfas = new dfa_list();
 	unsigned int index = 0;
 	for(list<dfa_nfa_list*>::iterator it=dfa_groups->begin(); it!=dfa_groups->end(); ++it){
@@ -163,6 +179,29 @@ int MDFA::get_next_dfa(unsigned int * in_set, unsigned int * V, unsigned int* E,
 					sum += *(E+i*size+j);
 				}
 			}
+			// printf("\t%d sum:%d\n", i, sum);
+			if(min_index < 0 || sum < min){
+				min_index = i;
+				min = sum;
+			}
+		}
+	}
+	return min_index;
+}
+
+int MDFA::get_init_dfa(unsigned int * V, unsigned int* E, int size){
+	int min = -1;
+	int min_index = -1;
+
+	for (int i = 0; i < size; ++i){
+		if(V[i]){
+			int sum = 0;
+			for (int j = 0; j < size; ++j){
+				if(V[j]){
+					sum += *(E+i*size+j);
+				}
+			}
+			// printf("get_init_dfa:%d sum:%d\n", i, sum);
 			if(min_index < 0 || sum < min){
 				min_index = i;
 				min = sum;

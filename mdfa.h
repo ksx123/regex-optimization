@@ -38,6 +38,7 @@ private:
 	int has_items(unsigned int * V, int size);
 	int is_limited(dfa_nfa_list* dnl);
 	int get_next_dfa(unsigned int * in_set, unsigned int * V, unsigned int* E, int size);
+	int get_init_dfa(unsigned int * V, unsigned int* E, int size);
 };
 
 inline dfa_list* MDFA::get_dfas() {return dfas;}
