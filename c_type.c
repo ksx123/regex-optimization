@@ -18,6 +18,12 @@ void* GetVoidPointerFromCharArray(char char_array[POINTER_SIZE]){
 void BitmapInit(unsigned char* buf, unsigned int n){
     memset(buf, 0, sizeof(char)*n);
 }
+
+void BitmapCopy(unsigned char* dst, unsigned char* src, unsigned int n){
+    for (int i = 0; i < n; ++i){
+        dst[i] = src[i];
+    }
+}
  
 void BitmapSet(unsigned char* buf, unsigned int n, unsigned int i){
     unsigned int add = i/BYTESIZE;

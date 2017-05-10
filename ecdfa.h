@@ -12,7 +12,6 @@ class EgCmpDfaEdage{
 public:
 	void *data;
 	unsigned lenght;
-	unsigned char type;
 };
 
 class EgCmpDfaSampleRange{
@@ -38,19 +37,31 @@ class EgCmpDfaRleRange{
 public:
 	unsigned char bitmap[CHAR_BIRMAP_SIZE];
 	EgCmpDfaRleRangeItem * ranges;
+	unsigned lenght;
 };
 
 class EgCmpDfaHasBitEdage{
 public:
 	EgCmpDfaBitmapRange * bit_ranges;
 	unsigned lenght;
-	void *other_ranges;
+	unsigned b_lenght;
+	EgCmpDfaSampleRange *other_ranges;
+};
+
+class EgCmpDfaHasBitWithRleEdage{
+public:
+	EgCmpDfaBitmapRange * bit_ranges;
+	unsigned lenght;
+	unsigned b_lenght;
+	EgCmpDfaRleRangeItem *other_ranges;
+	unsigned char bitmap[CHAR_BIRMAP_SIZE];
 };
 
 class EgCmpDfa
 {
 	protected:
-		EgCmpDfaEdage* edges;
+		void **edges;
+		unsigned char *types;
 		linked_set **accepted_rules;
 		unsigned size;
 	public:
@@ -59,8 +70,8 @@ class EgCmpDfa
 		unsigned getSize();
 		unsigned int getMemSize(); //B
 		linked_set *accepts(state_t state);
-		linked_set* match(FILE *file);
-		state_t getNext(state_t current, unsigned char input);
+		// linked_set* match(FILE *file);
+		// state_t getNext(state_t current, unsigned char input);
 	protected:
 		void forOneState(state_t s, state_t ** state_table);
 };

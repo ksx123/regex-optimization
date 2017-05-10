@@ -1,7 +1,7 @@
-#include "ecdfa.h"
+#include "ecdfab.h"
 #include "c_type.h"
 
-EgCmpDfaBitmapRange *get_bitmap_range_from_sample_ranges(list<EgCmpDfaSampleRange*> * sample_ranges){
+EgCmpDfaBitmapRange *get_bitmap_range_from_sample_ranges_b(list<EgCmpDfaSampleRange*> * sample_ranges){
 	// printf("start get_bitmap_range_from_sample_ranges\n");
 	EgCmpDfaBitmapRange *bitmap_range = new EgCmpDfaBitmapRange();
 	if(sample_ranges->empty()){
@@ -23,7 +23,7 @@ EgCmpDfaBitmapRange *get_bitmap_range_from_sample_ranges(list<EgCmpDfaSampleRang
 	return bitmap_range;
 }
 
-EgCmpDfaBitmapRange *create_bit_range_list(list<EgCmpDfaBitmapRange*> * bitmap_list){
+EgCmpDfaBitmapRange *create_bit_range_list_b(list<EgCmpDfaBitmapRange*> * bitmap_list){
 	EgCmpDfaBitmapRange* bit_list = new EgCmpDfaBitmapRange[bitmap_list->size()];
 	int index = 0;
 	for (list<EgCmpDfaBitmapRange*>::iterator it=bitmap_list->begin() ; it != bitmap_list->end(); ++it){
@@ -33,7 +33,7 @@ EgCmpDfaBitmapRange *create_bit_range_list(list<EgCmpDfaBitmapRange*> * bitmap_l
 	return bit_list;
 }
 
-EgCmpDfaSampleRange *create_sam_range_list(list<EgCmpDfaSampleRange*> * sample_list){
+EgCmpDfaSampleRange *create_sam_range_list_b(list<EgCmpDfaSampleRange*> * sample_list){
 	EgCmpDfaSampleRange* sam_list = new EgCmpDfaSampleRange[sample_list->size()];
 	int index = 0;
 	for (list<EgCmpDfaSampleRange*>::iterator it=sample_list->begin() ; it != sample_list->end(); ++it){
@@ -43,29 +43,7 @@ EgCmpDfaSampleRange *create_sam_range_list(list<EgCmpDfaSampleRange*> * sample_l
 	return sam_list;
 }
 
-EgCmpDfaRleRange *create_rle_range_list(list<EgCmpDfaSampleRange*> * sample_list){
-	EgCmpDfaRleRange * rle = new EgCmpDfaRleRange();
-	rle->ranges = new EgCmpDfaRleRangeItem[sample_list->size()];
-	rle->lenght = sample_list->size();
-
-	BitmapInit(rle->bitmap, CHAR_BIRMAP_SIZE);
-	int index = 0;
-	for (list<EgCmpDfaSampleRange*>::iterator it=sample_list->begin() ; it != sample_list->end(); ++it){
-		for (unsigned int i = (*it)->start; i <= (*it)->end; ++i) {
-			BitmapSet(rle->bitmap, CHAR_BIRMAP_SIZE, i);
-		}
-		rle->ranges[index].end = (*it)->end;
-		rle->ranges[index].target = (*it)->target;
-		index++;
-	}
-	return rle;
-}
-
-bool CompareRanges(EgCmpDfaSampleRange* _X,  EgCmpDfaSampleRange* _Y) {
-	return _X->start < _Y->start;
-}
-
-EgCmpDfa::EgCmpDfa(DFA* dfa){
+EgCmpDfaB::EgCmpDfaB(DFA* dfa){
 	int _size = this->size = dfa->size();
 
 	linked_set** o_accepted_rules = dfa-> get_accepted_rules();
@@ -87,7 +65,7 @@ EgCmpDfa::EgCmpDfa(DFA* dfa){
 }
 
 
-void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
+void EgCmpDfaB::forOneState(state_t s, state_t ** state_table){
 	int *mark = allocate_int_array(CSIZE);
 
 	for(int i=0;i<CSIZE;i++) {
@@ -135,7 +113,7 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 					}
 				}
 				if(same_target->size()>12){
-					bitmap_list->push_back(get_bitmap_range_from_sample_ranges(same_target));
+					bitmap_list->push_back(get_bitmap_range_from_sample_ranges_b(same_target));
 					//free megered sample range
 					for (list<EgCmpDfaSampleRange*>::iterator it=same_target->begin() ; it != same_target->end(); ++it){
 						delete *it;
@@ -164,17 +142,12 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 		EgCmpDfaSampleRange *sam_range_list = NULL;
 		EgCmpDfaRleRange * rle_range_list = NULL;
 		if(!bitmap_list->empty()){
-			bit_range_list = create_bit_range_list(bitmap_list);
+			bit_range_list = create_bit_range_list_b(bitmap_list);
 		}
 
 		if(!re_list->empty()){
 			// TODO sort re_list
-			re_list->sort(CompareRanges);
-			if(re_list->size()>CHAR_BIRMAP_SIZE){
-				rle_range_list = create_rle_range_list(re_list);
-			}else{
-				sam_range_list = create_sam_range_list(re_list);
-			}
+			sam_range_list = create_sam_range_list_b(re_list);
 		}
 
 		if(bit_range_list!=NULL && sam_range_list!=NULL){
@@ -234,7 +207,7 @@ void EgCmpDfa::forOneState(state_t s, state_t ** state_table){
 	free(mark);
 }
 
-EgCmpDfa::~EgCmpDfa(){
+EgCmpDfaB::~EgCmpDfaB(){
 
 	for(state_t s=0;s<this->size;++s){
 		delete this->accepted_rules[s];
@@ -290,7 +263,7 @@ EgCmpDfa::~EgCmpDfa(){
 	free(this->edges);
 }
 
-unsigned int EgCmpDfa::getMemSize(){
+unsigned int EgCmpDfaB::getMemSize(){
 
 	unsigned long long count1 = 0, count2 = 0, count3 = 0, count4 = 0, count5 = 0, count6 = 0;
 	unsigned int sum = 0;

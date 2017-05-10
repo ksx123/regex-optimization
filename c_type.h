@@ -14,4 +14,6 @@ void BitmapInit(unsigned char* buf, unsigned int n);
 void BitmapSet(unsigned char* buf, unsigned int n, unsigned int i);
 int BitmapCheck(unsigned char* buf, unsigned int n, unsigned int i);
 
+void BitmapCopy(unsigned char* dst, unsigned char* src, unsigned int n);
+
 #endif /*__C_TYPE_H*/

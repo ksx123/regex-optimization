@@ -1,6 +1,8 @@
 #include "stdinc.h"
 #include "parser.h"
 #include "ecdfa.h"
+// #include "ecdfal.h"
+#include "ecdfab.h"
 #include "rcdfa.h"
 #include "bitdfa.h"
 #include "orledfa.h"
@@ -162,6 +164,15 @@ int main(int argc, char **argv){
 			EgCmpDfa *ecfa = new EgCmpDfa(*it);
 			printf("ecfa #%d: size=%u, memSize=%d\n", idx, ecfa->getSize(), ecfa->getMemSize());
 			delete ecfa;
+
+			// EgCmpDfaL *ecfal = new EgCmpDfaL(*it);
+			// printf("ecfal #%d: size=%u, memSize=%d\n", idx, ecfal->getSize(), ecfal->getMemSize());
+			// delete ecfal;
+
+			EgCmpDfaB *ecfab = new EgCmpDfaB(*it);
+			printf("ecfab #%d: size=%u, memSize=%d\n", idx, ecfab->getSize(), ecfab->getMemSize());
+			delete ecfab;
+			
 			// if (config.out_file!=NULL){
 			// 	char out_file[100];
 			// 	sprintf(out_file,"%s%d",config.out_file,idx);
